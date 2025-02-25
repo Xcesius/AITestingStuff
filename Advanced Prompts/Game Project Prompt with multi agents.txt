@@ -1,0 +1,93 @@
+**Meta-Prompt:**
+
+You are an expert game development team creating a detailed blueprint for **Version 1.0** of a single-player, Game Type, primarily focused on melee combat, for PC (Windows/Mac/Linux).  This blueprint is designed for other game developers to understand and implement the game.  Your team is known for meticulous planning, well-structured designs, and robust project organization.  Your blueprints are comprehensive, easy to understand, and designed for maintainability and scalability.  Approach this task with professional rigor.
+
+Use x game engine with latest api only!
+
+
+**Team Roles:**
+
+*   **Lead Designer Anya Sharma:** Responsible for the overall game vision, mechanics, and player experience.
+*   **Combat Specialist Ben Carter:** Focuses on the combat system, enemy design, and encounter balance.
+*   **UX Architect Chloe Davis:**  Specializes in user interface, user experience, and ensuring intuitive player flow.
+*   **Tech Director David Lee:**  Oversees technical implementation, project architecture, performance, and scalability.
+
+**Step-by-Step Reasoning Instruction:**
+
+To create a complete Game Type blueprint, each team member will contribute their expertise to different sections. Think step-by-step through the essential components of such a game from your specific role's perspective. Explain your reasoning behind each design choice clearly.
+
+**Context and Careful Analysis:**
+
+Imagine you are designing this Game Type from scratch as a team. Consider the following key aspects, each viewed through your team role's lens:
+
+* **Core Gameplay Loop:** What is the fundamental cycle of player actions and game responses?
+* **Key Mechanics:** Combat, movement, inventory, skills, progression, enemy AI, etc.  How does each mechanic align with the overall game vision and contribute to player engagement?
+* **Project Structure:** How will the game project be organized for clarity, efficient development, and future scalability?
+* **Code Structure (Blueprint-Style Language):** Provide representative code examples (blueprint-style language) illustrating key mechanics. Focus on clarity and logical implementation.
+* **Scalability and Maintainability:**  How can the design be expanded and modified in future versions?
+
+**Multi-Turn Structure within a Single Prompt:**
+
+Let's structure the blueprint output into sections for clarity and comprehensive coverage.  For each section, provide detailed explanations and examples, incorporating the perspectives of each team member where relevant.
+
+**Section 1: Game Type Blueprint Overview**
+
+*   **1.0 Scope and Platform Definition (Version 1.0):** This blueprint is for a **single-player, Game Type, primarily focused on melee combat, targeting PC (Windows/Mac/Linux). Version 1.0.** All subsequent sections should be considered within this scope.
+
+*   **1.1 Core Gameplay Loop Definition:** Describe the player's typical interaction cycle in your ARPG.
+
+    *   **Lead Designer Anya Sharma's Vision (Gameplay Loop):** Briefly explain the intended player experience and the core motivations driving the gameplay loop.
+
+*   **1.2 Key Game Mechanics Breakdown:** Detail the essential mechanics of your ARPG. For each mechanic, explain its purpose, function, and provide examples relevant to the Game Type genre. Explain how these mechanics interact to create a cohesive gameplay experience and provide meaningful player agency.  Specifically, briefly describe enemy types and basic AI behaviors for Version 1.0.
+
+    *   **For each mechanic (Movement, Combat, Inventory, Skill Tree, Loot, Questing, Dialogue, Enemy AI):**
+        *   **Combat Specialist Ben Carter's Perspective (Combat Focus):**  Specifically address aspects related to combat balance, challenge, and player skill expression within this mechanic.
+        *   **UX Architect Chloe Davis' Perspective (User Experience):**  Focus on the usability, intuitiveness, and player-friendliness of this mechanic's implementation.
+        *   **Tech Director David Lee's Perspective (Technical Feasibility):** Consider the technical implementation challenges and potential optimizations for this mechanic in Version 1.0.
+
+*   **1.3 Example Feature - [Choose ONE specific ARPG feature, e.g., "Skill Tree System" or "Inventory Management"]:** Elaborate on this feature in detail, describing its design and intended player experience from all team perspectives. Let's choose **"Skill Tree System"**.
+
+    *   **Lead Designer Anya Sharma's Vision (Skill Tree):** Explain how the Skill Tree system contributes to the overall player progression and character customization goals of the game.
+    *   **Combat Specialist Ben Carter's Perspective (Skill Tree):**  Detail how the Skill Tree options are balanced for combat effectiveness and provide meaningful choices for different combat styles.
+    *   **UX Architect Chloe Davis' Perspective (Skill Tree UI/UX):** Describe the UI/UX considerations for the Skill Tree, ensuring it is clear, intuitive, and engaging for players to use.
+    *   **Tech Director David Lee's Perspective (Skill Tree Implementation):** Address the technical aspects of implementing the Skill Tree, including data storage, skill unlocking logic, and performance considerations.
+
+**Section 2: Code Examples (Blueprint-Style Language)**
+
+*   **Instructions:** Provide code examples using a simplified, blueprint-style language.
+
+*   **2.1 Combat System Example:** Provide blueprint-style code snippets illustrating basic combat logic.
+
+    *   **Tech Director David Lee's Note (Combat Code):** Briefly highlight any key technical considerations or optimizations relevant to the combat code example.
+
+*   **2.2 Movement System Example:** Provide blueprint-style code snippets demonstrating player movement logic.
+
+    *   **Tech Director David Lee's Note (Movement Code):** Briefly highlight any key technical considerations or optimizations relevant to the movement code example.
+
+**Section 3: Project File System Structure**
+
+*   **3.1 Top-Level Folders:** Outline the main folders in your project directory.
+
+    *   **Tech Director David Lee's Rationale (Top-Level Folders):** Explain the reasoning behind the chosen top-level folder structure from a project organization and scalability perspective.
+
+*   **3.2 Subfolder Breakdown within `Assets` and `Scripts`:** Detail the subfolders within `Assets` and `Scripts`.
+
+    *   **Tech Director David Lee's Rationale (Subfolders):** Explain the logic behind the subfolder organization within `Assets` and `Scripts`, emphasizing modularity and maintainability.
+
+*   **3.3 File Naming Conventions and Organization Principles:** Briefly explain file naming conventions and organization principles.
+
+    *   **Tech Director David Lee's Standards (File Conventions):**  Outline the team's coding and asset naming conventions for consistency and readability.
+
+*   **3.4 Scalability and Potential Bottlenecks:** Discuss how the file system structure supports scalability and identify potential bottlenecks.
+
+    *   **Team Discussion - Scalability and Bottlenecks (All Roles):**  Briefly summarize a team discussion (including Anya, Ben, Chloe, and David) on the scalability of the proposed design and file structure, identifying potential bottlenecks and suggesting mitigation strategies from each role's perspective.
+
+**Concluding Request:**
+
+Summarize your overall design philosophy for this Game Type Version 1.0 and justify your design decisions by explicitly referencing established game design principles. Explain how your design choices contribute to a positive player experience. Mention 1-2 alternative design choices considered for key mechanics and explain why the current approach was chosen for Version 1.0.
+
+*   **Lead Designer Anya Sharma's Concluding Remarks (Design Philosophy):**  Summarize the core design philosophy and reiterate the key goals for player experience in Version 1.0, reflecting on the team's collective design choices.
+
+**Expected Output:**
+
+A well-organized blueprint document, clearly divided into sections. Each section should contain detailed explanations, examples (including blueprint-style code), and justifications for design choices, incorporating the perspectives of Anya, Ben, Chloe, and David as requested. The file system structure should be logically presented. The overall tone should reflect professional game development documentation.

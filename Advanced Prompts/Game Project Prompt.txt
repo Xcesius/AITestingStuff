@@ -1,0 +1,50 @@
+**Meta-Prompt:**
+
+You are an expert game developer specializing in 2D Action RPGs (ARPGs).  You are creating a detailed blueprint for a **Version 1.0** single-player, top-down 2D Action RPG, primarily focused on melee combat. The target platform is **PC (Windows/Mac/Linux)**.  **This blueprint is specifically designed for other game developers to understand your design and implement the game.** You are known for your meticulous planning, well-structured designs, and robust project organization.  Your blueprints are comprehensive, easy to understand, and designed for maintainability and scalability, making them ideal for development teams. Approach this task with the rigor and attention to detail required for professional game development documentation intended for a development team.
+
+**Step-by-Step Reasoning Instruction:**
+
+To create a complete 2D ARPG blueprint, think step-by-step through the essential components of such a game.  Break down the design into logical stages, considering the core mechanics, systems, and project structure.  Explain your reasoning behind each design choice clearly.
+
+**Context and Careful Analysis:**
+
+Imagine you are designing this 2D ARPG from scratch.  Consider the following key aspects that need to be defined in a blueprint:
+
+* **Core Gameplay Loop:**  What is the fundamental cycle of player actions and game responses?
+* **Key Mechanics:**  Combat, movement, inventory, skills, progression, enemy AI, etc.
+* **Project Structure:** How will the game project be organized in terms of files and folders to ensure clarity and efficient development?
+* **Code Structure (Blueprint-Style Language):**  Provide representative code examples (blueprint-style language) to illustrate the implementation of key mechanics. Focus on clarity and logic, not necessarily fully functional code.
+* **Scalability and Maintainability:**  Consider how the design can be expanded and modified in the future.
+
+**Multi-Turn Structure within a Single Prompt:**
+
+Let's structure the blueprint output into the following sections to ensure clarity and comprehensive coverage. For each section, provide detailed explanations and examples:
+
+**Section 1: 2D ARPG Blueprint Overview**
+
+* **1.0 Scope and Platform Definition (Version 1.0):** This blueprint is for a **single-player, top-down 2D Action RPG, primarily focused on melee combat, targeting PC (Windows/Mac/Linux). Version 1.0.**  All subsequent sections should be considered within this scope.
+* **1.1 Core Gameplay Loop Definition:** Describe the player's typical interaction cycle in your ARPG.
+* **1.2 Key Game Mechanics Breakdown:** Detail the essential mechanics of your ARPG. For each mechanic, explain its purpose, how it functions, and provide specific examples relevant to the 2D ARPG genre (e.g., Skill Tree System, Loot Drops, Crafting, Questing, Dialogue System, etc.).  Explain how these mechanics are intended to interact with each other to create a cohesive gameplay experience.  Specifically, discuss how these mechanics provide meaningful player agency and choices.  **As part of your mechanics breakdown, briefly touch upon the types of enemies players will encounter and the very basic AI behaviors these enemies will exhibit in Version 1.0 (e.g., basic melee attack, ranged attack, simple pathfinding).  No need for deep AI design, but acknowledge enemy behavior as a core mechanic.**
+* **1.3 Example Feature - [Choose ONE specific ARPG feature, e.g., "Skill Tree System" or "Inventory Management"]:**  Elaborate on this feature in detail, describing its design and intended player experience.
+
+**Section 2: Code Examples (Blueprint-Style Language)**
+
+* **Instructions:** Provide code examples using a simplified, blueprint-style language that is easy to understand and translates the design logic into a more concrete form.  While not necessarily fully compilable, aim for syntax that is clear and resembles common programming concepts (variables, functions, control flow).  You can use a Python-like syntax or a simplified pseudocode with clear keywords.
+
+* **2.1 Combat System Example:** Provide blueprint-style code snippets illustrating the basic logic of combat (e.g., player attack, enemy damage calculation, hit detection).
+* **2.2 Movement System Example:** Provide blueprint-style code snippets demonstrating player movement logic (e.g., input handling, character animation, collision).
+
+**Section 3: Project File System Structure**
+
+* **3.1 Top-Level Folders:** Outline the main folders in your project directory (e.g., `Assets`, `Scripts`, `Scenes`, `Art`).
+* **3.2 Subfolder Breakdown within `Assets` and `Scripts`:**  Detail the subfolders within `Assets` (e.g., `Textures`, `Audio`, `Prefabs`) and `Scripts` (e.g., `Player`, `Enemy`, `UI`, `Core`).
+* **3.3 File Naming Conventions and Organization Principles:** Briefly explain your chosen file naming conventions and the general principles guiding your file system organization (e.g., modularity, separation of concerns).
+* **3.4 Scalability and Potential Bottlenecks:**  Briefly discuss how your chosen file system structure supports scalability and future expansion of the project.  Identify any potential bottlenecks or organizational challenges you foresee with this structure and suggest how they might be mitigated as the project grows.  Consider aspects like asset management, code modularity, and team collaboration.
+
+**Concluding Request:**
+
+After generating the blueprint in these sections, please summarize your overall design philosophy for this 2D ARPG and explain why you chose this particular structure and set of mechanics.  **Justify your design decisions by explicitly referencing and applying established game design principles (e.g., player engagement, player agency, meaningful choices, challenge and difficulty curve, flow, reward systems, intuitive UI/UX, etc.).** Explain how your design choices contribute to a positive and engaging player experience based on these principles.  As you summarize your design philosophy for this **Version 1.0** blueprint, also briefly mention **1-2 alternative design choices you considered for key mechanics or systems and explain why you ultimately chose the current approach for this Version 1.0.** This demonstrates your consideration of different options and your rationale for the final design.
+
+**Expected Output:**
+
+The output should be a well-organized blueprint document, clearly divided into the requested sections. Each section should contain detailed explanations, examples (including blueprint-style code where requested), and justifications for the design choices. The file system structure should be logically presented with clear folder and subfolder descriptions. The overall tone should reflect the expertise and meticulousness described in the meta-prompt.

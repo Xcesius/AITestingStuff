@@ -1,0 +1,120 @@
+[gd_scene load_steps=3 format=3 uid="uid://dq25ysj4hx4c8"]
+
+[ext_resource type="Script" path="res://scripts/tools/debug_tools.gd" id="1_dg6hu"]
+[ext_resource type="PackedScene" path="res://scenes/tools/map_preview_tool.tscn" id="2_e5o8e"]
+
+[node name="DebugTools" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_dg6hu")
+
+[node name="TabContainer" type="TabContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Map Generator" type="Control" parent="TabContainer"]
+layout_mode = 2
+
+[node name="MapPreviewTool" parent="TabContainer/Map Generator" instance=ExtResource("2_e5o8e")]
+layout_mode = 1
+
+[node name="Loot Simulator" type="Control" parent="TabContainer"]
+visible = false
+layout_mode = 2
+
+[node name="Panel" type="Panel" parent="TabContainer/Loot Simulator"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="TabContainer/Loot Simulator/Panel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -121.0
+offset_top = -11.5
+offset_right = 121.0
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+text = "Loot Simulator will be implemented next"
+
+[node name="AI Visualizer" type="Control" parent="TabContainer"]
+visible = false
+layout_mode = 2
+
+[node name="Panel" type="Panel" parent="TabContainer/AI Visualizer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="TabContainer/AI Visualizer/Panel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -118.5
+offset_top = -11.5
+offset_right = 118.5
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+text = "AI Visualizer will be implemented next"
+
+[node name="Performance" type="Control" parent="TabContainer"]
+visible = false
+layout_mode = 2
+
+[node name="Panel" type="Panel" parent="TabContainer/Performance"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="TabContainer/Performance/Panel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -155.0
+offset_top = -11.5
+offset_right = 155.0
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+text = "Performance Monitor will be implemented next"
+
+[node name="CloseButton" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -40.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = 40.0
+grow_horizontal = 0
+text = "X" 

@@ -1,0 +1,14 @@
+Observe module -> Vision/Hearing -> Translate module -> See/Hear what they are doing/saying -> Output into text ->
+								-> Large Thinking Agent -> Output module -> Best course of action (weight?) -> Decide Module
+																												-> Smaller output agent text/voice/image
+																												
+																												
+Optimized Observe module -> Real-time Vision/Hearing (Optimized: 3-7ms Vision, 5-8ms Hearing) -> Optimized Fast Translate module -> Rapid Action Recognition & Speech-to-Text (Optimized: 10-15ms Action, 20-30ms Speech) -> Structured Textual Representation (Total Optimized: ~50ms) ->
+-> Optimized Rapid Large Thinking Agent -> Output module -> Weighted Best course of action (Optimized: 20-30ms) -> Optimized Swift Decide Module
+-> Optimized Rapid Action Execution Agent text/voice/image (Text: Optimized 3-5ms)
+
+Observe module -> Real-time Vision/Hearing -> Fast Translate module -> Rapid Action Recognition & Speech-to-Text -> Structured Textual Representation ->
+-> Rapid Large Thinking Agent -> Output module -> Weighted Best course of action -> Swift Decide Module
+-> Rapid Action Execution Agent text/voice/image
+
+ALICE -> Autonomous Learned Integrated Cognitive Execution

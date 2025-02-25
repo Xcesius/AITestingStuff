@@ -1,0 +1,110 @@
+[gd_scene load_steps=4 format=3 uid="uid://cqjrgmkvrhtds"]
+
+[ext_resource type="Script" path="res://scripts/ui/debug_console.gd" id="1_kgnhj"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gkwuj"]
+bg_color = Color(0.129412, 0.129412, 0.129412, 0.901961)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.32549, 0.32549, 0.32549, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jfrmb"]
+bg_color = Color(0.129412, 0.129412, 0.129412, 0.705882)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.32549, 0.32549, 0.32549, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[node name="DebugConsole" type="CanvasLayer"]
+process_mode = 3
+layer = 100
+script = ExtResource("1_kgnhj")
+
+[node name="ConsolePanel" type="Panel" parent="."]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 300.0
+grow_horizontal = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_gkwuj")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ConsolePanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 5
+alignment = 1
+
+[node name="OutputText" type="RichTextLabel" parent="ConsolePanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+focus_mode = 2
+theme_override_constants/line_separation = 4
+text = "Debug Console Initialized"
+scroll_following = true
+selection_enabled = true
+
+[node name="CommandInput" type="LineEdit" parent="ConsolePanel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/minimum_character_width = 0
+placeholder_text = "Enter command (type 'help' for available commands)"
+caret_blink = true
+caret_blink_interval = 0.5
+
+[node name="FPSLabel" type="Label" parent="."]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -100.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = 36.0
+grow_horizontal = 0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+text = "FPS: 60"
+horizontal_alignment = 2
+
+[node name="StatsPanel" type="Panel" parent="."]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -200.0
+offset_top = 40.0
+offset_right = -10.0
+offset_bottom = 130.0
+grow_horizontal = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_jfrmb")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="StatsPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MemoryLabel" type="Label" parent="StatsPanel/VBoxContainer"]
+layout_mode = 2
+text = "Memory: 0 MB"
+
+[node name="DrawCallsLabel" type="Label" parent="StatsPanel/VBoxContainer"]
+layout_mode = 2
+text = "Draw Calls: 0"
+
+[node name="ObjectsLabel" type="Label" parent="StatsPanel/VBoxContainer"]
+layout_mode = 2
+text = "Nodes: 0" 

@@ -1,0 +1,10 @@
+Generate a long and detailed blueprint plan for developing a 2D ARPG in the Godot 4 engine using the latest API features. The blueprint should include comprehensive design concepts, technical architecture, and detailed code examples (with inline documentation) for core systems such as player movement, combat, enemy AI, inventory management, quest/dialogue systems, UI, audio management, and save/load functionality. Use diagrams to illustrate the project directory structure, node hierarchies, and gameplay flow.
+
+Before executing the final plan, simulate a collaborative team review process. Assume the roles of multiple experts—a design lead, a technical lead, a project manager, and a scalability architect—who will:
+
+Review the initial outline of the plan step by step.
+Discuss potential improvements and identify any shortcomings or optimization opportunities in the design, code structure, and scalability considerations.
+Refine the plan iteratively, ensuring that each section is optimized for clarity, modularity, and future expansion (including considerations for multiplayer support and modding).
+After this internal team discussion phase, output the final, refined blueprint plan. Additionally, provide a summary at the end describing the improvements made during the team review and any changes that were implemented compared to the initial outline.
+
+Ensure that the final output is extremely detailed (targeting at least 8000 logical tokens) and covers both fundamental and advanced topics, including performance optimization, architectural best practices, and iterative refinement.

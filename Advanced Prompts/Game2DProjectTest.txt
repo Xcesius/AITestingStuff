@@ -1,0 +1,127 @@
+START PROMPT FOR GODOT 4.X 2D ARPG BLUEPRINT GENERATION (IMPROVED)
+
+<--- AGENT INFORMATION --->
+[ USER IS ON WINDOWS OS ]
+
+
+Project Goal: Generate a comprehensive blueprint for building a 2D ARPG prototype in Godot Engine 4.x, focusing on scalability, modularity, and best practices for a more robust foundation compared to a basic prototype.
+
+Engine: Godot Engine 4.x (Forward+ renderer)
+
+Art Style: 2D Pixel Art (Assume user will replace placeholders with their own 16x16 or 32x32 assets)
+
+Target Output: Step-by-step, extremely detailed instructions for building the 2D ARPG prototype. Instructions should be structured logically (though not necessarily rigidly phased like before, allowing for more organic feature development). Output should include:
+
+Scene Structure Blueprints (Node Trees): Clearly defined scene structures for Player, Enemy, Map, UI elements, etc., showing node hierarchy and relationships.
+
+GDScript Code Snippets: Complete, commented GDScript code for all scripts, using placeholders for user-specific paths, assets, and configuration values. Code should demonstrate modularity, use of signals where appropriate, and follow Godot best practices.
+
+Resource Definitions: Detailed descriptions and (where applicable) example code for custom Resources (CharacterStats, EnemyStats, ItemData, LootTable, Inventory, etc.), emphasizing data-driven design.
+
+Editor Instructions: Granular, step-by-step instructions for actions within the Godot editor (creating scenes, nodes, resources, setting properties, connecting signals, configuring input maps, etc.).
+
+Testing Steps: Clear instructions on how to test each implemented feature after each step or logical section.
+
+Placeholders: Use bracketed placeholders throughout the instructions for:
+
+Asset Paths: [PATH_TO_PLAYER_IDLE_SPRITESHEET], [PATH_TO_ENEMY_WALK_SPRITESHEET], [PATH_TO_ITEM_ICON_TEXTURE], [PATH_TO_DUNGEON_TILESET], etc.
+
+Resource Paths: [PATH_TO_CHARACTER_STATS_RESOURCE], [PATH_TO_ENEMY_STATS_RESOURCE], [PATH_TO_LOOT_TABLE_RESOURCE], [PATH_TO_ITEM_DATA_RESOURCE], etc.
+
+Configuration Values: [PLAYER_MAX_HEALTH], [ENEMY_MOVE_SPEED], [PLAYER_ATTACK_DAMAGE], [ENEMY_ATTACK_RANGE], [INVENTORY_SLOTS_COUNT], [MAP_WIDTH], [MAP_HEIGHT], [ROOM_MIN_SIZE], [ROOM_MAX_SIZE], [MAX_ROOMS], etc.
+
+Animation Names: [PLAYER_IDLE_ANIMATION_NAME], [PLAYER_WALK_RIGHT_ANIMATION_NAME], [ENEMY_ATTACK_ANIMATION_NAME], etc.
+
+UI Element Names: [HEALTH_BAR_NODE_NAME], [HEALTH_LABEL_NODE_NAME], [INVENTORY_GRID_NODE_NAME], etc.
+
+Functionality Placeholders: [GAME_OVER_LOGIC], [ENEMY_DEATH_EFFECTS], [ITEM_USE_LOGIC], [EQUIPMENT_LOGIC], etc., indicating areas for user-defined implementation.
+
+Core Features to Include in the Blueprint:
+
+Player Character:
+
+Modular scene structure (PlayerCharacter.tscn) using CharacterBody2D for physics-based movement.
+
+Animated sprites (AnimatedSprite2D) for visual representation and animations (idle, walk, attack, hit, death – directional variations encouraged but can be simplified if necessary).
+
+Collision (CollisionShape2D).
+
+CharacterStats custom Resource for managing player attributes (health, attack, defense, etc.).
+
+PlayerMovement script for input handling and movement logic using move_and_slide(), animation control.
+
+PlayerCombat script for handling player attacks, hit detection (basic distance check or suggest using Area2D for improved hitboxes in future iterations), and damage application.
+
+Inventory custom Resource for managing player inventory (item storage).
+
+pickup_item function to add items to the inventory.
+
+Enemy Character:
+
+Modular scene structure (EnemyCharacter.tscn) using CharacterBody2D.
+
+Animated sprites (AnimatedSprite2D).
+
+Collision (CollisionShape2D).
+
+EnemyStats custom Resource for enemy attributes.
+
+EnemyMovement script for basic AI movement: chasing player using move_and_slide(), animation control. Suggest use of NavigationAgent2D for future pathfinding improvements.
+
+EnemyCombat script for basic AI combat: melee attacks, attack cooldown, hit detection (basic distance check or suggest Area2D for future), damage application to player.
+
+Loot dropping on death using LootTable and ItemPickup system.
+
+on_death function for death handling and loot drop logic.
+
+Map Generation:
+
+Procedural dungeon map generation using TileMap.
+
+Room-based generation algorithm (or suggest alternative algorithms for future expansion).
+
+MapGenerator script to handle map generation logic, tile placement, and instantiation of TileMap scene.
+
+TileSet resource (TileSet) for defining map tiles (floor, walls, etc.).
+
+Consider adding basic environmental elements (obstacles, decorations) to the generated maps (as optional future feature).
+
+Enemy spawning within generated maps.
+
+Loot System:
+
+ItemData custom Resource to define item properties (name, description, icon, type, stat bonuses).
+
+LootTable custom Resource to define loot drop chances and item pools for different enemy types.
+
+ItemPickup scene (Area2D-based) for representing loot drops in the game world, allowing player pickup.
+
+Integration with EnemyCharacter death to trigger loot drops.
+
+User Interface (UI):
+
+HUD scene (HUD.tscn) to display player health using ProgressBar and Label. HUD.gd script to update health display based on player stats.
+
+Basic Inventory UI scene (InventoryUI.tscn) using GridContainer to display inventory slots and item icons. InventoryUI.gd script to update inventory display when inventory changes and toggle UI visibility.
+
+Input action for toggling inventory UI (inventory_toggle).
+
+Blueprint Generation Directives (Focus on "Better Blueprints"):
+
+Modularity: Emphasize scene and script modularity. Use separate scenes and scripts for different game elements (Player, Enemy, Map, UI, Items, etc.).
+
+Data-Driven Design: Utilize custom Resources extensively for game data (stats, items, loot tables, map configuration).
+
+Signal-Based Communication (Where Appropriate): Suggest using Godot Signals for communication between components where it makes sense (e.g., for health changes, item pickups, enemy death events) to decouple systems.
+
+Groups and Layers: Utilize Godot Groups (e.g., "player", "enemies", "pickups") and Collision Layers/Masks for better organization and control of interactions.
+
+Code Comments and Organization: Ensure all generated GDScript code is well-commented and logically organized. Follow GDScript style conventions.
+
+Scalability Considerations: While it's a prototype, design the blueprint with some consideration for future scalability and expansion. Suggest potential areas for improvement and more robust implementations in later development phases (e.g., state machines for AI, more advanced combat mechanics, UI improvements, item effects, etc.).
+
+Output Format:
+
+Generate the output as a well-structured, easy-to-follow document. Use clear headings, subheadings, numbered lists, code blocks (with syntax highlighting if possible), and bold text to highlight key elements (scene names, script names, resource names, node names, properties, etc.). Assume the user is actively building the prototype in Godot while following the instructions.
+
+Begin generating the blueprint based on these detailed instructions. Remember to use placeholders as specified and focus on creating a more robust and scalable foundation for the 2D ARPG prototype.
