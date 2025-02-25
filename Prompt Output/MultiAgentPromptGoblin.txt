@@ -1,0 +1,222 @@
+Okay, team, let's get this 2D ARPG blueprint underway. I'll be coordinating and ensuring everyone's input is integrated effectively. Remember, clarity and a focus on Version 1.0 are key.
+
+Section 1: 2D ARPG Blueprint Overview
+
+1.0 Scope and Platform Definition (Version 1.0): This blueprint is for a single-player, top-down 2D Action RPG, primarily focused on melee combat, targeting PC (Windows/Mac/Linux). Version 1.0.
+1.1 Core Gameplay Loop Definition: The core gameplay loop for our ARPG is as follows:
+Exploration: The player explores environments, uncovering secrets, points of interest, and potential combat encounters.
+Combat: The player engages in real-time melee combat with various enemy types.
+Loot Acquisition: Upon defeating enemies or completing quests, the player acquires loot, including equipment, crafting materials, and currency.
+Character Progression: The player uses experience gained from combat and quests to level up, allocate skill points, and improve their character's attributes.
+Inventory Management: The player manages their inventory, equipping items, crafting new gear, and selling unwanted items.
+Quest Completion: The player accepts and completes quests, advancing the narrative and earning rewards.
+Repeat: This loop continues, driving the player to explore further, engage in more challenging combat, and improve their character.
+Lead Designer Anya Sharma's Vision (Gameplay Loop): My vision is to create a game that is immediately engaging with satisfying combat, but also rewards long-term investment through character customization and progression. The player should feel a constant sense of empowerment as they become stronger and more skilled. The loop should be compelling enough to keep players exploring and experimenting with different builds.
+1.2 Key Game Mechanics Breakdown:
+Movement: The player controls their character's movement in a top-down perspective. Typically, this will involve using the WASD keys or a controller stick.
+Combat Specialist Ben Carter's Perspective (Movement): Movement needs to be responsive and precise. A slight delay or "floatiness" can make melee combat feel frustrating. Consider adding a dodge roll or similar mechanic for quick repositioning during combat.
+UX Architect Chloe Davis' Perspective (Movement): We need to ensure the movement controls are intuitive and customizable. The option to remap keys is essential. We should also consider visual feedback, such as subtle character animations, to clearly communicate movement.
+Tech Director David Lee's Perspective (Movement): We can use Godot's built-in KinematicBody2D for collision and movement. Optimizing the collision shapes is crucial for performance, especially with many objects in the scene. We should also consider implementing a pathfinding solution for potential companion AI or more complex enemy behaviors. We will use move_and_slide() function for movement, which handles collision detection and response.
+
+# Movement example in Godot (GDScript, Blueprint-style)
+extends CharacterBody2D
+
+@export var speed = 200
+
+func _physics_process(delta):
+    var velocity = Vector2.ZERO
+    if Input.is_action_pressed("move_right"):
+        velocity.x += 1
+    if Input.is_action_pressed("move_left"):
+        velocity.x -= 1
+    if Input.is_action_pressed("move_down"):
+        velocity.y += 1
+    if Input.is_action_pressed("move_up"):
+        velocity.y -= 1
+
+    velocity = velocity.normalized() * speed
+    
+    if velocity != Vector2.ZERO:
+        move_and_slide()
+Combat: Real-time melee combat with a focus on timing, positioning, and resource management (e.g., stamina, mana).
+Combat Specialist Ben Carter's Perspective (Combat): Combat should feel impactful. We need to provide satisfying hit feedback (visual and audio) and create a sense of weight behind each attack. Enemy attack patterns should be predictable but challenging to react to. Different weapon types should offer distinct combat styles and advantages. I recommend implementing hitboxes and hurtboxes to precisely control the interaction between attacks and characters.
+UX Architect Chloe Davis' Perspective (Combat): The combat UI should be clear and concise, displaying essential information like health, stamina, and active buffs/debuffs. Visual cues, such as directional indicators for incoming attacks, can greatly improve the player's ability to react. Customizable hit effects and damage numbers are also a must.
+Tech Director David Lee's Perspective (Combat): We can use Godot's AnimationPlayer to manage attack animations and synchronize them with hit detection. We can also use Signals for events like "attack_hit" to trigger damage calculations and visual effects. Consider using a state machine to manage the player's combat states (e.g., attacking, blocking, dodging). We will use Area2D for hitboxes and hurtboxes.
+Inventory: A system for storing and managing items acquired throughout the game.
+Combat Specialist Ben Carter's Perspective (Inventory): Inventory management should be streamlined. Too much clutter can detract from the core combat experience. Consider implementing item stacking, sorting options, and a clear indication of item stats.
+UX Architect Chloe Davis' Perspective (Inventory): The inventory UI needs to be intuitive and easy to navigate. Drag-and-drop functionality for equipping items and a clear display of item stats are essential. Implement tooltips that display detailed information about items when hovered over.
+Tech Director David Lee's Perspective (Inventory): We can store inventory data in a Resource or Dictionary. Consider using a data-driven approach, defining item properties in external files (e.g., JSON or CSV) and loading them into the game. This allows for easy modification and addition of new items without modifying the code.
+Skill Tree: A system for players to customize their character's abilities and unlock new skills.
+Combat Specialist Ben Carter's Perspective (Skill Tree): The skill tree should offer a variety of viable builds, catering to different combat styles. Skills should be impactful and synergize well with each other. Avoid "trap" skills that are clearly inferior to others.
+UX Architect Chloe Davis' Perspective (Skill Tree): The skill tree UI should be visually appealing and easy to understand. Clear descriptions of each skill and its effects are crucial. Allow players to preview skills before unlocking them.
+Tech Director David Lee's Perspective (Skill Tree): We can represent the skill tree as a graph data structure. Each node in the graph represents a skill, and the edges represent dependencies. Storing the skill tree data in a separate file (e.g., JSON) allows for easy modification and expansion. We need to efficiently manage skill dependencies and prevent players from unlocking skills without meeting the requirements.
+Loot: Items dropped by enemies or found in chests. These items can be equipment, consumables, crafting materials, or currency.
+Combat Specialist Ben Carter's Perspective (Loot): Loot should feel rewarding. Varying loot rarity and affixes (e.g., increased damage, elemental resistance) can add excitement to the loot acquisition process. Implement a system to prevent excessive item clutter, such as automatic item stacking or filtering options.
+UX Architect Chloe Davis' Perspective (Loot): Visual cues, such as colored item names or particle effects, can indicate the rarity and value of loot. Displaying item stats and comparing them to equipped items in a clear and concise manner is important.
+Tech Director David Lee's Perspective (Loot): We can use procedural generation to create randomized loot with varying stats and affixes. Using a weighted random number generator, we can control the frequency of different loot drops. We can define loot tables in external files (e.g., JSON) to easily manage the available items and their drop rates.
+Questing: Tasks given to the player by NPCs that advance the narrative and reward the player with experience, loot, or access to new areas.
+Combat Specialist Ben Carter's Perspective (Questing): Quests should encourage exploration and combat. We should avoid tedious fetch quests and focus on quests with meaningful objectives and interesting encounters.
+UX Architect Chloe Davis' Perspective (Questing): A clear and organized quest log is essential. The quest log should display the quest objectives, progress, and rewards. Include a map that highlights quest locations and points of interest.
+Tech Director David Lee's Perspective (Questing): We can use a state machine to track the progress of each quest. Store quest data in external files (e.g., JSON) to easily add new quests and modify existing ones. Use Signals to notify the player when they complete a quest objective or receive a new quest.
+Dialogue: Interactions with NPCs that advance the narrative, provide quests, or offer insights into the game world.
+Combat Specialist Ben Carter's Perspective (Dialogue): Dialogue should be concise and informative. Avoid lengthy exposition dumps and focus on dialogue that provides clear objectives and context for the player's actions.
+UX Architect Chloe Davis' Perspective (Dialogue): The dialogue UI should be easy to read and navigate. Use clear and legible fonts. Allow players to scroll through the dialogue history. Provide clear options for responding to NPCs.
+Tech Director David Lee's Perspective (Dialogue): We can use a dialogue tree data structure to represent the branching paths of conversations. Store dialogue data in external files (e.g., JSON) to easily add new dialogue and modify existing ones. We can use Signals to trigger events based on the player's dialogue choices, such as starting a quest or changing the NPC's disposition.
+Enemy AI: Basic behaviors for enemies, such as patrolling, chasing, and attacking.
+Combat Specialist Ben Carter's Perspective (Enemy AI): Enemy AI should be challenging but fair. Enemies should react intelligently to the player's actions and use a variety of attack patterns. Different enemy types should have distinct behaviors and weaknesses.
+UX Architect Chloe Davis' Perspective (Enemy AI): Visual cues, such as enemy animations and telegraphs, can indicate their intentions. This allows players to react accordingly and avoid damage.
+Tech Director David Lee's Perspective (Enemy AI): We can use a state machine to manage the enemy's AI behaviors. Implement simple AI behaviors like "Patrol," "Chase," and "Attack." We can use Godot's Navigation2D system for pathfinding. Optimize the AI to avoid performance issues when there are many enemies in the scene.
+Enemy Types: For Version 1.0, we'll focus on a few core enemy types.
+Basic Melee: Simple enemies that charge at the player and attack.
+Ranged: Enemies that stay at a distance and fire projectiles.
+Tank: Enemies with high health and armor that move slowly.
+Elite: Stronger versions of basic enemies with unique abilities.
+Basic AI behaviors
+Patrolling: Move along a predetermined path.
+Chasing: Follow the player when within a certain range.
+Attacking: Perform a melee or ranged attack.
+1.3 Example Feature - Skill Tree System:
+Lead Designer Anya Sharma's Vision (Skill Tree): The Skill Tree system is core to character customization. It should allow players to tailor their character to their preferred playstyle. I envision multiple branches focusing on different aspects of combat, such as damage output, defense, and utility. The skill tree should provide a clear path for progression and offer meaningful choices that impact the player's effectiveness in combat.
+Combat Specialist Ben Carter's Perspective (Skill Tree): Skill choices need to be carefully balanced. We should offer skills that enhance existing combat abilities (e.g., increased attack speed, critical hit chance) as well as skills that introduce new mechanics (e.g., a powerful area-of-effect attack, a defensive shield). It's important to avoid "must-have" skills that invalidate other choices. We need clear synergy between different skills so that players can create specialized builds.
+UX Architect Chloe Davis' Perspective (Skill Tree UI/UX): The Skill Tree UI needs to be visually appealing and intuitive. Each skill should have a unique icon and a clear description of its effects. The UI should allow players to easily navigate the tree and preview skills before unlocking them. We should also include a respec option so that players can experiment with different builds without penalty. The skill tree should also be easily accessible from the main game HUD.
+Tech Director David Lee's Perspective (Skill Tree Implementation): From a technical perspective, the skill tree can be implemented using a graph data structure, as previously mentioned. Each node in the graph represents a skill and has properties such as its name, description, icon, cost, and dependencies. We can store this data in a JSON file for easy modification. When the player unlocks a skill, we need to update their character's stats or abilities accordingly. Performance is important here, so we need to optimize the skill unlocking logic and avoid unnecessary calculations. We'll likely use signals to communicate between the skill tree and the player character. We can also use a dictionary to map skill IDs to actual game effects.
+Section 2: Code Examples (Blueprint-Style Language)
+
+Instructions: Code examples using a simplified, blueprint-style language.
+2.1 Combat System Example:
+
+# Player attack function (simplified)
+extends CharacterBody2D
+
+@export var attack_damage = 10
+@onready var hitbox = $Hitbox #Assumes there's a Hitbox node child of the Player
+
+func attack():
+    #Play attack animation
+    $AnimationPlayer.play("attack")
+    #Enable hitbox to detect collisions
+    hitbox.monitoring = true
+    #Disable hitbox after animation ends. Use animation signals for this in practice.
+    await $AnimationPlayer.animation_finished #Wait attack anim finish.
+    hitbox.monitoring = false
+
+# Hitbox collision detection (in Hitbox node)
+extends Area2D
+
+func _on_area_entered(area):
+    if area.is_in_group("enemies"):
+        # Damage the enemy
+        area.take_damage(owner.attack_damage) #Owner is the player
+
+# Enemy take_damage function (simplified)
+extends CharacterBody2D
+
+@export var health = 50
+
+func take_damage(damage):
+    health -= damage
+    if health <= 0:
+        die()
+
+func die():
+    # Play death animation
+    queue_free()
+    # Drop loot (implementation not shown)
+Tech Director David Lee's Note (Combat Code): This is a simplified example. In a real game, you'd need to handle things like attack cooldowns, animation synchronization, critical hits, and status effects. Consider using a dedicated combat manager class to handle combat logic. We can also use a data-driven approach to define attack properties (e.g., damage, range, cooldown) in external files. Furthermore, the animation player can get complicated and needs to be well managed to avoid visual bugs.
+2.2 Movement System Example:
+
+# Player movement (simplified, same as above but repeated for clarity)
+extends CharacterBody2D
+
+@export var speed = 200
+
+func _physics_process(delta):
+    var velocity = Vector2.ZERO
+    if Input.is_action_pressed("move_right"):
+        velocity.x += 1
+    if Input.is_action_pressed("move_left"):
+        velocity.x -= 1
+    if Input.is_action_pressed("move_down"):
+        velocity.y += 1
+    if Input.is_action_pressed("move_up"):
+        velocity.y -= 1
+
+    velocity = velocity.normalized() * speed
+    
+    if velocity != Vector2.ZERO:
+        move_and_slide()
+Tech Director David Lee's Note (Movement Code): This is a basic example. In a real game, you'd need to handle things like different movement states (e.g., walking, running, dodging), collision avoidance, and animation synchronization. Consider using a state machine to manage the player's movement states. We can also use a separate camera controller to smooth camera movement and prevent it from clipping through walls. Implementing a more sophisticated input buffer might also be required to support complex movement combinations.
+Section 3: Project File System Structure
+
+3.1 Top-Level Folders:
+Assets: Contains all game assets, such as textures, sounds, and models.
+Scenes: Contains all game scenes, such as levels, characters, and UI elements.
+Scripts: Contains all game scripts, written in GDScript.
+Data: Contains game data, such as item definitions, quest definitions, and dialogue trees.
+Art: Contains source files for our art, such as PSDs, Aseprite files, or Blender files. This isn't directly used by the game, but it's important for our workflow.
+Tech Director David Lee's Rationale (Top-Level Folders): This structure provides a clear separation of concerns. It allows developers to easily find the assets, scenes, scripts, and data they need. Keeping assets separate from code is essential for maintainability and scalability.
+3.2 Subfolder Breakdown within Assets and Scripts:
+Assets:
+Textures: Contains all textures.
+Characters: Character sprites.
+Enemies: Enemy sprites.
+Environment: Environment tiles and textures.
+UI: UI elements.
+Sounds: Contains all sound effects and music.
+SFX: Sound effects.
+Music: Background music.
+Animations: Contains animations.
+Characters: Character animations
+Enemies: Enemy animations
+Scripts:
+Characters: Scripts related to the player character.
+Enemies: Scripts related to enemies.
+UI: Scripts related to the user interface.
+Core: Core game logic and systems.
+Combat: Combat-related scripts.
+Inventory: Inventory-related scripts.
+Skills: Skill tree scripts.
+Quests: Quest scripts.
+Tech Director David Lee's Rationale (Subfolders): This subfolder structure promotes modularity and makes it easier to manage large projects. Grouping related assets and scripts together improves code readability and maintainability. Specifically, we can further divide the Assets/Textures/Environment to have Tilesets and Autotiles if we're using those systems for level design. The Art folder will have its own internal organizational structure, depending on the tools being used by the artists.
+3.3 File Naming Conventions and Organization Principles:
+Use descriptive and consistent file names.
+Use PascalCase for class names and camelCase for variables and functions.
+Organize files into logical folders based on their type and function.
+Use comments to explain complex code.
+Use version control (Git) to track changes and collaborate with other developers.
+Tech Director David Lee's Standards (File Conventions):
+Textures: texture_character_hero.png, texture_environment_tree.png
+Scripts: PlayerController.gd, EnemyAI.gd
+Scenes: scene_level_01.tscn, scene_player.tscn
+Use prefixes to identify asset types (e.g., texture_, script_, scene_).
+Keep file names short and descriptive.
+Adhere to the Godot style guide for GDScript.
+3.4 Scalability and Potential Bottlenecks:
+The modular file system structure supports scalability by allowing developers to easily add new assets, scripts, and scenes without affecting existing code.
+Potential bottlenecks include:
+Large textures can increase loading times. Use texture compression and mipmapping to optimize texture performance.
+Complex scenes with many objects can reduce frame rates. Use occlusion culling and object pooling to optimize scene performance.
+Inefficient AI can consume a lot of CPU resources. Optimize AI algorithms and limit the number of AI agents in the scene.
+Team Discussion - Scalability and Bottlenecks (All Roles):
+Anya (Lead Designer): From a design perspective, we need to be mindful of the number of different enemy types and abilities we introduce. Too much variety can overwhelm the player and make balancing the game difficult. We should focus on quality over quantity.
+Ben (Combat Specialist): Combat mechanics could become a bottleneck if not optimized. Using too many physics calculations, hitboxes, or projectiles at once could cause performance dips, especially on lower-end machines. Optimize attack animations and reduce the number of active projectiles at any given time. Also consider using simpler collision shapes where possible.
+Chloe (UX Architect): UI performance can be a bottleneck if we have too many active UI elements. Make sure to optimize the UI by using efficient rendering techniques and minimizing the number of draw calls. Consider only rendering UI elements when they are needed. Implement UI element pooling.
+David (Tech Director): As mentioned before, texture sizes and complex scene structures can lead to performance issues. Implement a robust asset management system that loads and unloads assets dynamically. Explore the possibility of using multiple scenes to split large levels and load/unload them as needed.
+Concluding Request:
+
+Our overall design philosophy for this 2D ARPG Version 1.0 is to create a focused and engaging melee combat experience with a satisfying sense of progression. We're aiming for a classic ARPG feel with modern sensibilities, emphasizing player skill and meaningful choices. We justify our design decisions by referencing established game design principles such as:
+
+Juiciness: Providing satisfying feedback for player actions (e.g., hit effects, sound effects).
+Flow: Creating a smooth and intuitive gameplay experience.
+Progression: Rewarding players for their time and effort by allowing them to become stronger and more skilled.
+Choice and Consequence: Give the player choices that affect the game world.
+Our design choices contribute to a positive player experience by:
+
+Providing challenging but fair combat.
+Offering a variety of character customization options.
+Rewarding exploration and experimentation.
+Alternative design choices considered:
+
+Turn-based combat: We considered turn-based combat, but ultimately decided against it because we wanted to create a more visceral and action-packed experience.
+Procedural generation of levels: We considered procedural generation of levels, but decided against it because we wanted to have more control over the level design and create more memorable environments. For Version 1.0, we want curated experiences.
+Lead Designer Anya Sharma's Concluding Remarks (Design Philosophy): We’re aiming for approachability with depth. The core gameplay needs to be immediately understandable, but the long-term character building and itemization should offer layers of strategic decision-making. Success should feel like it comes from a combination of player skill in combat and smart choices in character development. Our priority is creating a cohesive experience that players want to return to. The team has done an excellent job balancing their own expertise to achieve this goal.

@@ -1,0 +1,4 @@
+[gd_scene load_steps=2 format=2]
+[node name="HUD" type="CanvasLayer"]
+[node name="ProgressBar" type="ProgressBar" parent="."]
+[node name="Label" type="Label" parent="."] 

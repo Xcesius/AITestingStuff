@@ -1,0 +1,129 @@
+
+START ADVANCED PROMPT FOR GODOT 4.X 2D ARPG BLUEPRINT GENERATION (ENHANCED)
+
+<--- AGENT INFORMATION --->
+User OS: Windows
+Agent Capability: The agent is empowered to create its own tools and utilities as needed for the job (e.g., custom editor plugins, debug consoles, automated testing scripts).
+Project Goal
+Generate a comprehensive, advanced blueprint for building a scalable 2D ARPG prototype in Godot Engine 4.x. This blueprint must emphasize:
+
+Scalability & Modularity: Clearly defined, decoupled systems with data-driven design.
+Advanced Logic: Use of state machines, signal-based communications, and AI improvements.
+Tool Integration: Automatic generation of auxiliary tools (e.g., debugging helpers, asset management scripts) to enhance the workflow.
+Future-Proofing: Suggestions for further development (e.g., advanced combat, network multiplayer, dynamic weather systems).
+Engine & Art Style
+Engine: Godot Engine 4.x (using Forward+ renderer)
+Art Style: 2D Pixel Art
+(Note: The user will replace all placeholders with their custom assets; see placeholders below.)
+Target Output
+A well-structured, step-by-step document that includes:
+
+Scene Structure Blueprints (Node Trees):
+Detailed node hierarchies for the Player, Enemies, Map, UI, and other game components.
+Clear diagrams or textual representations of how scenes interact.
+GDScript Code Snippets:
+Complete, commented scripts following Godot best practices.
+Use of modular functions, state machines, and signals.
+Placeholders for asset paths, configuration values, and custom logic.
+Resource Definitions:
+Custom Resources such as CharacterStats, EnemyStats, ItemData, LootTable, Inventory, etc.
+Data-driven examples with clear explanations.
+Editor Instructions:
+Granular, step-by-step instructions for using the Godot Editor.
+Creating scenes, nodes, resources, connecting signals, configuring input maps, etc.
+Testing & Debugging Steps:
+Clear instructions for testing each feature.
+Guidelines for utilizing any generated debugging or logging tools.
+Tool Generation Directives:
+Instruct the agent to generate any additional tools needed (e.g., an automated level generator, debug console scripts, asset importers).
+Each tool should be accompanied by usage instructions and integration steps.
+Placeholders
+Use the following bracketed placeholders consistently throughout the blueprint:
+
+Asset Paths: [PATH_TO_PLAYER_IDLE_SPRITESHEET], [PATH_TO_ENEMY_WALK_SPRITESHEET], [PATH_TO_ITEM_ICON_TEXTURE], [PATH_TO_DUNGEON_TILESET], etc.
+Resource Paths: [PATH_TO_CHARACTER_STATS_RESOURCE], [PATH_TO_ENEMY_STATS_RESOURCE], [PATH_TO_LOOT_TABLE_RESOURCE], [PATH_TO_ITEM_DATA_RESOURCE], etc.
+Configuration Values: [PLAYER_MAX_HEALTH], [ENEMY_MOVE_SPEED], [PLAYER_ATTACK_DAMAGE], [ENEMY_ATTACK_RANGE], [INVENTORY_SLOTS_COUNT], [MAP_WIDTH], [MAP_HEIGHT], [ROOM_MIN_SIZE], [ROOM_MAX_SIZE], [MAX_ROOMS], etc.
+Animation Names: [PLAYER_IDLE_ANIMATION_NAME], [PLAYER_WALK_RIGHT_ANIMATION_NAME], [ENEMY_ATTACK_ANIMATION_NAME], etc.
+UI Element Names: [HEALTH_BAR_NODE_NAME], [HEALTH_LABEL_NODE_NAME], [INVENTORY_GRID_NODE_NAME], etc.
+Functionality Placeholders: [GAME_OVER_LOGIC], [ENEMY_DEATH_EFFECTS], [ITEM_USE_LOGIC], [EQUIPMENT_LOGIC], etc.
+Core Features to Include
+1. Player Character
+Scene Structure: PlayerCharacter.tscn built on CharacterBody2D.
+Nodes: AnimatedSprite2D, CollisionShape2D, etc.
+Scripts:
+PlayerMovement.gd: Handle input with move_and_slide(), dynamic animation control, and state machine logic for idle, walking, attacking.
+PlayerCombat.gd: Process attacks with improved hit detection (consider using Area2D for dynamic hitboxes) and damage application.
+Custom Resources:
+CharacterStats: Define health, attack, defense, speed, etc.
+Inventory: Manage item storage; include a function pickup_item to handle item collection.
+Tool Integration:
+Optionally generate a debug tool for visualizing player collision shapes and state transitions.
+2. Enemy Character
+Scene Structure: EnemyCharacter.tscn based on CharacterBody2D.
+Nodes: AnimatedSprite2D, CollisionShape2D, etc.
+Scripts:
+EnemyMovement.gd: AI for chasing the player using move_and_slide().
+Include suggestions for using NavigationAgent2D for advanced pathfinding in later iterations.
+EnemyCombat.gd: Implement AI combat using a state machine (idle, chasing, attacking, retreating) and cooldown management.
+Custom Resources:
+EnemyStats: Attributes for enemy behavior.
+Death & Loot:
+On enemy death, trigger a function on_death that handles death animations, effects ([ENEMY_DEATH_EFFECTS]), and loot drops via LootTable.
+Tool Integration:
+Create an AI debugger tool to log enemy state transitions and track AI decision-making.
+3. Map Generation
+Procedural Generation:
+Use a TileMap with a custom MapGenerator.gd script.
+Implement room-based procedural generation with clear algorithms (room splitting, random door placement, etc.).
+Advanced Option: Include dynamic event triggers (e.g., spawn enemies, loot events) and environmental puzzles.
+Resource Integration:
+Use a custom TileSet resource to define floor, wall, and decorative tiles.
+Tool Integration:
+Auto-generate a map preview tool within the editor to visualize the generated dungeon layout in real time.
+4. Loot & Item System
+Custom Resources:
+ItemData: Define item properties such as name, description, icon, type, and stat bonuses.
+LootTable: Configure loot drop probabilities and item pools.
+Scenes:
+ItemPickup.tscn: An Area2D scene that represents loot drops and supports player interactions.
+Integration:
+Link the enemy’s on_death function to trigger loot drops.
+Tool Integration:
+Optionally generate a loot simulator to test and tweak drop rates and item balance.
+5. User Interface (UI)
+HUD & Inventory:
+HUD Scene (HUD.tscn): Displays player health via ProgressBar and Label.
+HUD.gd: Dynamically update health and status information.
+Inventory UI (InventoryUI.tscn): Use a GridContainer for inventory slots.
+InventoryUI.gd: Update the display on inventory changes and provide UI toggling via input (inventory_toggle).
+Additional UI Elements:
+Consider a dedicated debug console UI to display real-time logs from generated debug tools.
+Tool Integration:
+Generate scripts that automatically bind input actions and manage UI state transitions.
+Blueprint Generation Directives
+Modularity & Separation of Concerns:
+Ensure every game element (Player, Enemy, Map, UI, Items, etc.) has its own scene and script file.
+Data-Driven Architecture:
+Utilize custom Resources to centralize game data. Make it simple to adjust gameplay values without changing code.
+State Machine Implementation:
+Include state machines for player and enemy behavior, outlining states (e.g., Idle, Moving, Attacking, Damaged, Dead) and transitions.
+Signal-Based Communication:
+Use Godot Signals for decoupled interactions (e.g., health updates, item pickups, enemy death events).
+Group & Layer Management:
+Organize nodes into groups (e.g., "player", "enemies", "pickups") and configure collision layers/masks for controlled interactions.
+Tool & Debug Integration:
+When appropriate, generate custom tool scripts (with tool mode enabled) for debugging, logging, or automation.
+Code Comments & Documentation:
+Provide thorough comments and adhere to Godot’s style conventions. Use clear headings, bullet lists, and code blocks for easy navigation.
+Scalability Considerations:
+Outline potential future enhancements, such as advanced AI (using behavior trees), dynamic weather effects, multiplayer networking, or extended inventory systems.
+Output Format
+The final output should be a detailed, well-organized document featuring:
+
+Clear Headings & Subheadings: Organize sections by game component (Player, Enemy, Map, UI, etc.).
+Numbered Lists & Bullet Points: For step-by-step instructions.
+Code Blocks with Syntax Highlighting: Present complete GDScript code snippets.
+Bolded Key Elements: Highlight scene names, script names, resource names, and node names.
+Explanatory Comments: Inline within code and as separate guidance notes.
+Final Note:
+The agent is free to generate any additional helper tools or scripts if it determines they are necessary to better meet the objectives of the blueprint. The emphasis should be on creating a living, flexible, and forward-thinking ARPG prototype that serves as a robust foundation for future game development.

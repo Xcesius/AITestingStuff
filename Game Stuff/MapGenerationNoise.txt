@@ -1,0 +1,175 @@
+@tool
+extends Node2D
+
+@onready var tile_map = $DungeonTileMap
+@export var tile_set : TileSet = preload("[PATH_TO_DUNGEON_TILESET]") # Placeholder
+
+@export var map_width : int = [MAP_WIDTH] : set = set_map_width # Placeholder
+@export var map_height : int = [MAP_HEIGHT] : set = set_map_height # Placeholder
+
+# Noise Parameters
+@export var noise_frequency : float = 0.05 : set = set_noise_frequency
+@export var noise_octaves : int = 4 : set = set_noise_octaves
+@export var noise_persistence : float = 0.5 : set = set_noise_persistence
+@export var noise_lacunarity : float = 2.0 : set = set_noise_lacunarity
+@export var noise_seed : int = 0 : set = set_noise_seed
+@export var floor_threshold : float = 0.0 : set = set_floor_threshold
+
+# Room Generation Parameters
+@export var room_min_size : int = [ROOM_MIN_SIZE] : set = set_room_min_size # Placeholder
+@export var room_max_size : int = [ROOM_MAX_SIZE] : set = set_room_max_size # Placeholder
+@export var max_rooms : int = [MAX_ROOMS] : set = set_max_rooms # Placeholder
+@export var room_placement_attempts : int = 100 : set = set_room_placement_attempts # Attempts to place rooms
+
+var noise : FastNoiseLite
+var grid : Array[Array[int]] # 0: wall, 1: floor, 2: room floor
+
+func _ready():
+    if Engine.is_editor_hint():
+        generate_map()
+    else:
+        generate_map()
+
+func _process(delta):
+    if Engine.is_editor_hint():
+        update_configuration_warnings()
+
+func generate_map():
+    grid = create_grid(map_width, map_height)
+    generate_noise_map() # First, generate the noise base
+    apply_threshold()      # Apply threshold to noise to create initial floor/wall
+    var noise_floor_grid = grid.duplicate(true) # Keep a copy of the noise-only floor for room carving constraint
+
+    var rooms = generate_rooms(noise_floor_grid) # Generate rooms, constrained by noise floor
+    carve_rooms(rooms)
+    carve_corridors(rooms, noise_floor_grid) # Corridors also constrained by noise floor
+
+    draw_tiles()
+
+func create_grid(width, height):
+    var new_grid = []
+    for _x in range(width):
+        var column = []
+        for _y in range(height):
+            column.append(0) # Initialize as walls
+        new_grid.append(column)
+    return new_grid
+
+func generate_noise_map():
+    noise = FastNoiseLite.new()
+    noise.seed = noise_seed
+    noise.frequency = noise_frequency
+    noise.noise_type = FastNoiseLite.NoiseType.Simplex
+    noise.fractal_type = FastNoiseLite.FractalType.FBm
+    noise.octaves = noise_octaves
+    noise.persistence = noise_persistence
+    noise.lacunarity = noise_lacunarity
+
+    for x in range(map_width):
+        for y in range(map_height):
+            var noise_value = noise.get_noise_2d(x, y)
+            grid[x][y] = noise_value
+
+func apply_threshold():
+    for x in range(map_width):
+        for y in range(map_height):
+            if grid[x][y] > floor_threshold:
+                grid[x][y] = 1 # Noise-based floor
+            else:
+                grid[x][y] = 0 # Wall
+
+func generate_rooms(noise_floor_grid):
+    var rooms = []
+    for _i in range(room_placement_attempts): # Try to place rooms multiple times
+        if len(rooms) >= max_rooms: # Stop if max rooms reached
+            break
+
+        var room_width = randi_range(room_min_size, room_max_size)
+        var room_height = randi_range(room_min_size, room_max_size)
+        var room_x = randi_range(1, map_width - room_width - 1)
+        var room_y = randi_range(1, map_height - room_height - 1)
+        var new_room_rect = Rect2i(room_x, room_y, room_width, room_height)
+
+        if is_room_valid_in_noise(new_room_rect, noise_floor_grid): # Check if room fits within noise floor
+            var overlaps = false
+            for existing_room_rect in rooms:
+                if new_room_rect.intersects(existing_room_rect.grow(1)):
+                    overlaps = true
+                    break
+            if not overlaps:
+                rooms.append(new_room_rect)
+    return rooms
+
+func is_room_valid_in_noise(room_rect, noise_floor_grid):
+    # Check if the proposed room area is mostly within the noise-generated floor
+    var floor_tile_count = 0
+    var total_tiles = room_rect.get_area()
+    for x in range(room_rect.position.x, room_rect.end.x):
+        for y in range(room_rect.position.y, room_rect.end.y):
+            if noise_floor_grid[x][y] == 1: # Check against the noise-only floor grid
+                floor_tile_count += 1
+    # Require at least 80% of the room area to be within the noise floor
+    return float(floor_tile_count) / float(total_tiles) >= 0.8
+
+func carve_rooms(rooms):
+    for room_rect in rooms:
+        for x in range(room_rect.position.x, room_rect.end.x):
+            for y in range(room_rect.position.y, room_rect.end.y):
+                grid[x][y] = 2 # Room floor tile (different from noise floor initially)
+
+func carve_corridors(rooms, noise_floor_grid):
+    for i in range(len(rooms) - 1):
+        var room1_center = rooms[i].get_center()
+        var room2_center = rooms[i+1].get_center()
+        carve_corridor_L_shape(room1_center, room2_center, noise_floor_grid)
+
+func carve_corridor_L_shape(start_pos, end_pos, noise_floor_grid):
+    var current_pos = start_pos
+    while current_pos.x != end_pos.x:
+        if noise_floor_grid[int(current_pos.x)][int(current_pos.y)] == 1: # Only carve if within noise floor
+            grid[int(current_pos.x)][int(current_pos.y)] = 1 # Regular floor for corridors (can be same as noise floor or different)
+        if current_pos.x < end_pos.x:
+            current_pos.x += 1
+        else:
+            current_pos.x -= 1
+    while current_pos.y != end_pos.y:
+        if noise_floor_grid[int(current_pos.x)][int(current_pos.y)] == 1: # Only carve if within noise floor
+            grid[int(current_pos.x)][int(current_pos.y)] = 1 # Regular floor
+        if current_pos.y < end_pos.y:
+            current_pos.y += 1
+        else:
+            current_pos.y -= 1
+
+func draw_tiles():
+    tile_map.tile_set = tile_set
+    for x in range(map_width):
+        for y in range(map_height):
+            if grid[x][y] == 1: # Noise-based floor or corridor floor
+                tile_map.set_cell(x, y, 0) # Tile ID 0 for floor (adjust based on your TileSet)
+            elif grid[x][y] == 2: # Room floor
+                tile_map.set_cell(x, y, 2) # Tile ID 2 for room floor (if you want a different tile for rooms)
+            elif grid[x][y] == 0: # Wall
+                tile_map.set_cell(x, y, 1) # Tile ID 1 for wall
+            else:
+                tile_map.set_cell(x, y, -1) # -1 for empty cell
+
+# Setter functions for @export variables (same as before, for editor preview)
+func set_map_width(value):
+    map_width = value
+    if Engine.is_editor_hint():
+        generate_map()
+# ... (rest of setter functions for all @export variables - same as in the noise-only generator) ...
+func set_room_placement_attempts(value):
+    room_placement_attempts = value
+    if Engine.is_editor_hint():
+        generate_map()
+
+
+func update_configuration_warnings():
+    if not Engine.is_editor_hint():
+        return
+
+    var warnings = PackedStringArray()
+    if tile_set == null:
+        warnings.append("Tile Set is not assigned. Map preview will not render correctly.")
+    set_configuration_warnings(warnings)

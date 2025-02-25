@@ -1,0 +1,304 @@
+@tool
+extends Node2D
+
+@onready var tile_map: TileMap = $DungeonTileMap  # Connect your TileMap node here
+@export var tile_set: TileSet = preload("res://path/to/your/dungeon_tileset.tres")  # Replace with your actual path
+
+@export var map_width: int = 64 setget set_map_width
+@export var map_height: int = 48 setget set_map_height
+@export var room_min_size: int = 4 setget set_room_min_size
+@export var room_max_size: int = 10 setget set_room_max_size
+@export var max_rooms: int = 10 setget set_max_rooms
+@export var corridor_width_min: int = 1 setget set_corridor_width_min
+@export var corridor_width_max: int = 3 setget set_corridor_width_max
+
+# 2D grid: 0 = wall, 1 = floor
+var grid: Array = []
+# Store generated rooms as dictionaries:
+# { "rect": Rect2i, "metadata": { enemy_spawns, loot, theme, room_id, timestamp, spawn_rate, enemy_types } }
+var current_rooms: Array = []
+
+func _ready() -> void:
+	randomize()  # Seed random number generator
+	generate_map()
+
+func _get_configuration_warning() -> String:
+	var warnings := []
+	if tile_set == null:
+		warnings.append("Tile Set is not assigned. Map preview will not render correctly.")
+	if tile_map == null:
+		warnings.append("Tile Map is not assigned. Connect the DungeonTileMap node.")
+	return warnings.empty() ? "" : warnings.join("\n")
+
+func generate_map() -> void:
+	grid = create_grid(map_width, map_height)
+	current_rooms = generate_rooms()
+	carve_rooms(current_rooms)
+	carve_corridors(current_rooms)
+	add_decoration()  # Placeholder for extra decoration logic
+	draw_tiles()
+
+# Helper: Returns a random integer between min and max (inclusive)
+func randi_range(min: int, max: int) -> int:
+	return randi() % (max - min + 1) + min
+
+func create_grid(width: int, height: int) -> Array:
+	var new_grid = []
+	for x in range(width):
+		var column = []
+		for y in range(height):
+			column.append(0)  # 0 = wall by default
+		new_grid.append(column)
+	return new_grid
+
+# Generate rooms with metadata and return an array of room dictionaries.
+func generate_rooms() -> Array:
+	var rooms = []
+	for i in range(max_rooms):
+		var room_width = randi_range(room_min_size, room_max_size)
+		var room_height = randi_range(room_min_size, room_max_size)
+		# Ensure the room fits within borders
+		if map_width - room_width - 2 <= 0 or map_height - room_height - 2 <= 0:
+			continue
+		var room_x = randi_range(1, map_width - room_width - 2)
+		var room_y = randi_range(1, map_height - room_height - 2)
+		var room_rect = Rect2i(room_x, room_y, room_width, room_height)
+		
+		# 50% chance to create an L-shaped room
+		if randf() < 0.5:
+			room_rect = create_l_shape(room_rect)
+		
+		# Check for overlap (with a 1-tile margin) with existing rooms
+		var overlaps = false
+		for existing in rooms:
+			var existing_rect: Rect2i = existing["rect"]
+			if room_rect.intersects(existing_rect.grow(1)):
+				overlaps = true
+				break
+		if not overlaps:
+			var room_data = {
+				"rect": room_rect,
+				"metadata": generate_room_metadata()
+			}
+			rooms.append(room_data)
+	return rooms
+
+# Create an L-shaped room by merging the base room with an attached smaller rectangle.
+func create_l_shape(base_rect: Rect2i) -> Rect2i:
+	var half_min = max(room_min_size // 2, 1)
+	var max_l_width = max(base_rect.size.x // 2, half_min)
+	var max_l_height = max(base_rect.size.y // 2, half_min)
+	var l_width = randi_range(half_min, max_l_width)
+	var l_height = randi_range(half_min, max_l_height)
+	
+	# Randomly choose one corner to attach the smaller rectangle.
+	var corner = randi_range(0, 3)
+	var l_x = base_rect.position.x
+	var l_y = base_rect.position.y
+	match corner:
+		0: # Top-left – no change.
+			pass
+		1: # Top-right
+			l_x = base_rect.position.x + base_rect.size.x - l_width
+		2: # Bottom-left
+			l_y = base_rect.position.y + base_rect.size.y - l_height
+		3: # Bottom-right
+			l_x = base_rect.position.x + base_rect.size.x - l_width
+			l_y = base_rect.position.y + base_rect.size.y - l_height
+	
+	var l_rect = Rect2i(l_x, l_y, l_width, l_height)
+	var union_x = min(base_rect.position.x, l_rect.position.x)
+	var union_y = min(base_rect.position.y, l_rect.position.y)
+	var union_end_x = max(base_rect.position.x + base_rect.size.x, l_rect.position.x + l_rect.size.x)
+	var union_end_y = max(base_rect.position.y + base_rect.size.y, l_rect.position.y + l_rect.size.y)
+	return Rect2i(Vector2i(union_x, union_y), Vector2i(union_end_x - union_x, union_end_y - union_y))
+
+# Generate default metadata for a room.
+func generate_room_metadata() -> Dictionary:
+	var themes = ["dungeon", "cave", "ruin", "forest", "fire", "ice"]
+	var metadata = {
+		"enemy_spawns": [],
+		"loot": [],
+		"theme": themes[randi_range(0, themes.size() - 1)],
+		"room_id": str(OS.get_unix_time()) + "_" + str(randi()),
+		"timestamp": OS.get_unix_time(),
+		"spawn_rate": 1.0,
+		"enemy_types": ["goblin"]
+	}
+	return metadata
+
+func carve_rooms(rooms: Array) -> void:
+	for room_data in rooms:
+		var room_rect: Rect2i = room_data["rect"]
+		for x in range(room_rect.position.x, room_rect.position.x + room_rect.size.x):
+			for y in range(room_rect.position.y, room_rect.position.y + room_rect.size.y):
+				# 10% chance to skip an interior tile to create irregularity.
+				if randf() < 0.1 and (x > room_rect.position.x and x < room_rect.position.x + room_rect.size.x - 1 and y > room_rect.position.y and y < room_rect.position.y + room_rect.size.y - 1):
+					continue
+				grid[x][y] = 1  # Mark as floor
+
+func carve_corridors(rooms: Array) -> void:
+	# Connect each room to the next like puzzle pieces.
+	for i in range(len(rooms) - 1):
+		var room_a = rooms[i]
+		var room_b = rooms[i + 1]
+		var start_pos = room_a["rect"].position + room_a["rect"].size / 2
+		var end_pos = room_b["rect"].position + room_b["rect"].size / 2
+		
+		# Adjust corridor parameters based on theme compatibility/enemy placement zones.
+		if room_a["metadata"]["theme"] != room_b["metadata"]["theme"]:
+			# Placeholder: if themes differ, you might increase corridor enemy spawn chances or adjust width.
+			print("Connecting rooms with different themes: ", room_a["metadata"]["theme"], " vs ", room_b["metadata"]["theme"])
+		carve_variable_width_corridor(start_pos, end_pos)
+
+func carve_variable_width_corridor(start_pos: Vector2, end_pos: Vector2) -> void:
+	var current_pos = start_pos
+	var corridor_width = randi_range(corridor_width_min, corridor_width_max)
+	
+	while int(current_pos.x) != int(end_pos.x) or int(current_pos.y) != int(end_pos.y):
+		var cx = int(current_pos.x)
+		var cy = int(current_pos.y)
+		if is_valid_grid_pos(cx, cy):
+			grid[cx][cy] = 1
+		# Widen the corridor perpendicular to movement direction.
+		if abs(current_pos.x - end_pos.x) > abs(current_pos.y - end_pos.y):
+			for w in range(-corridor_width // 2, corridor_width // 2 + 1):
+				if is_valid_grid_pos(cx, cy + w):
+					grid[cx][cy + w] = 1
+		else:
+			for w in range(-corridor_width // 2, corridor_width // 2 + 1):
+				if is_valid_grid_pos(cx + w, cy):
+					grid[cx + w][cy] = 1
+
+		# Move towards the target.
+		if int(current_pos.x) != int(end_pos.x) and int(current_pos.y) != int(end_pos.y):
+			if randf() < 0.5:
+				current_pos.x += (current_pos.x < end_pos.x ? 1 : -1)
+			else:
+				current_pos.y += (current_pos.y < end_pos.y ? 1 : -1)
+		elif int(current_pos.x) != int(end_pos.x):
+			current_pos.x += (current_pos.x < end_pos.x ? 1 : -1)
+		elif int(current_pos.y) != int(end_pos.y):
+			current_pos.y += (current_pos.y < end_pos.y ? 1 : -1)
+
+func is_valid_grid_pos(x: int, y: int) -> bool:
+	return x >= 0 and x < map_width and y >= 0 and y < map_height
+
+func add_decoration() -> void:
+	# Placeholder for additional decoration (e.g., wall variations, object placement)
+	pass
+
+func draw_tiles() -> void:
+	if tile_map == null:
+		return
+	tile_map.tile_set = tile_set
+	for x in range(map_width):
+		for y in range(map_height):
+			if grid[x][y] == 1:
+				tile_map.set_cell(x, y, 0)  # Floor tile ID (adjust as needed)
+			else:
+				tile_map.set_cell(x, y, 1)  # Wall tile ID (adjust as needed)
+
+# -- Save/Load/Placement Functions --
+
+# Save the current rooms (with metadata) to a JSON file.
+func save_current_rooms(file_path: String = "user://saved_rooms.json") -> void:
+	save_rooms(current_rooms, file_path)
+
+# Save an array of room dictionaries to a JSON file.
+func save_rooms(rooms_to_save: Array, file_path: String) -> void:
+	var data = []
+	for room in rooms_to_save:
+		var rect: Rect2i = room["rect"]
+		data.append({
+			"rect": {
+				"x": rect.position.x,
+				"y": rect.position.y,
+				"width": rect.size.x,
+				"height": rect.size.y
+			},
+			"metadata": room["metadata"]
+		})
+	var file = File.new()
+	var error = file.open(file_path, File.WRITE)
+	if error != OK:
+		push_error("Failed to open file for writing: " + file_path)
+		return
+	file.store_string(JSON.print(data))
+	file.close()
+	print("Rooms saved to: ", file_path)
+
+# Load rooms from a JSON file and return an array of room dictionaries.
+func load_rooms(file_path: String = "user://saved_rooms.json") -> Array:
+	var file = File.new()
+	if not file.file_exists(file_path):
+		push_warning("Save file does not exist: " + file_path)
+		return []
+	var error = file.open(file_path, File.READ)
+	if error != OK:
+		push_error("Failed to open file for reading: " + file_path)
+		return []
+	var json_string = file.get_as_text()
+	file.close()
+	var parse_result = JSON.parse(json_string)
+	if parse_result.error != OK:
+		push_error("JSON parse error: " + parse_result.error_string)
+		return []
+	var rooms_data = parse_result.result
+	var loaded_rooms = []
+	for room_dict in rooms_data:
+		var rect_dict = room_dict["rect"]
+		var room_rect = Rect2i(rect_dict["x"], rect_dict["y"], rect_dict["width"], rect_dict["height"])
+		var metadata = room_dict.get("metadata", {})
+		loaded_rooms.append({
+			"rect": room_rect,
+			"metadata": metadata
+		})
+	return loaded_rooms
+
+# Place loaded rooms into the grid with an optional offset.
+func place_loaded_rooms(rooms: Array, offset: Vector2 = Vector2.ZERO) -> void:
+	for room_data in rooms:
+		var original_rect: Rect2i = room_data["rect"]
+		var offset_rect = Rect2i(original_rect.position + offset, original_rect.size)
+		for x in range(offset_rect.position.x, offset_rect.position.x + offset_rect.size.x):
+			for y in range(offset_rect.position.y, offset_rect.position.y + offset_rect.size.y):
+				if is_valid_grid_pos(x, y):
+					grid[x][y] = 1
+	draw_tiles()
+
+# -- Setter Functions for Editor Updates --
+func set_map_width(value: int) -> void:
+	map_width = value
+	if Engine.is_editor_hint():
+		generate_map()
+
+func set_map_height(value: int) -> void:
+	map_height = value
+	if Engine.is_editor_hint():
+		generate_map()
+
+func set_room_min_size(value: int) -> void:
+	room_min_size = value
+	if Engine.is_editor_hint():
+		generate_map()
+
+func set_room_max_size(value: int) -> void:
+	room_max_size = value
+	if Engine.is_editor_hint():
+		generate_map()
+
+func set_max_rooms(value: int) -> void:
+	max_rooms = value
+	if Engine.is_editor_hint():
+		generate_map()
+
+func set_corridor_width_min(value: int) -> void:
+	corridor_width_min = value
+	if Engine.is_editor_hint():
+		generate_map()
+
+func set_corridor_width_max(value: int) -> void:
+	corridor_width_max = value
+	if Engine.is_editor_hint():
+		generate_map()

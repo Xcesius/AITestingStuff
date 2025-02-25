@@ -1,0 +1,4 @@
+[gd_scene load_steps=2 format=2]
+[node name="EnemyCharacter" type="CharacterBody2D"]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."] 

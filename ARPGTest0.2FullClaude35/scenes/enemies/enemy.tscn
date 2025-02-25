@@ -1,0 +1,53 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/enemy_controller.gd" id="1_enemy"]
+[ext_resource type="Script" path="res://scripts/state_machines/state_machine.gd" id="2_state"]
+[ext_resource type="Script" path="res://scripts/enemies/states/enemy_idle_state.gd" id="3_idle"]
+[ext_resource type="Script" path="res://scripts/enemies/states/enemy_chase_state.gd" id="4_chase"]
+[ext_resource type="Script" path="res://scripts/enemies/states/enemy_attack_state.gd" id="5_attack"]
+
+[sub_resource type="RectangleShape2D" id="1"]
+size = Vector2(32, 32)
+
+[sub_resource type="CircleShape2D" id="2"]
+radius = 300.0
+
+[node name="Enemy" type="CharacterBody2D" groups=["enemies"]]
+collision_layer = 4
+collision_mask = 3
+script = ExtResource("1_enemy")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("1")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+
+[node name="StateMachine" type="Node" parent="."]
+script = ExtResource("2_state")
+initial_state = NodePath("Idle")
+
+[node name="Idle" type="Node" parent="StateMachine"]
+script = ExtResource("3_idle")
+
+[node name="Chase" type="Node" parent="StateMachine"]
+script = ExtResource("4_chase")
+
+[node name="Attack" type="Node" parent="StateMachine"]
+script = ExtResource("5_attack")
+
+[node name="PlayerDetection" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PlayerDetection"]
+shape = SubResource("2")
+
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="."]
+path_desired_distance = 16.0
+target_desired_distance = 32.0
+path_max_distance = 100.0
+avoidance_enabled = true
+radius = 16.0
+neighbor_distance = 100.0 

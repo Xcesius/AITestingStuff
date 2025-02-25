@@ -1,0 +1,67 @@
+I want you to execute and run this prompt in the txt file.
+
+I'll help create a comprehensive 2D ARPG prototype in Godot 4.x based on the provided blueprint. Let me first check the project structure and create necessary files.
+I'll start by creating the essential project structure and core files. First, let's create a PROJECT_STRUCTURE.md to document our organization:
+Now let's create the todo.md to track our implementation progress:
+Let's create the info.md file with project details and technical specifications:
+Now let's create the core directory structure:
+I see there was an issue with the PowerShell command. Let's create directories one by one:
+Great! Now let's start implementing the core systems. We'll begin with the state machine base class since it will be used by both player and enemy systems:
+Now let's create the state machine class:
+Now let's create the base character stats resource that will be used by both players and enemies:
+Now let's create the player scene and its basic movement script:
+Now let's create the player states:
+Let's create the move state:
+Let's create the attack state:
+Now let's create a basic enemy controller:
+Let's create the enemy states. First, the idle state:
+Now let's create the chase state:
+Let's create the enemy attack state:
+Let's create a basic item system. First, the item data resource:
+Now let's create the inventory system:
+Let's create a basic UI system. First, the HUD:
+Now let's create the inventory UI:
+Let me try that edit again:
+Now let's create the inventory slot UI component:
+Now let's add the swap_items function to the Inventory class:
+Now let's create a basic map generator:
+Let's create a debug console to help with development:
+Note: we default stop the agent after 25 tool calls since it is an experimental feature. Please ping us at hi@cursor.com if you think we should increase this limit. If you need more tool calls, please give the agent feedback and ask it to continue.
+continue
+
+Let's create the necessary scene files for our core components. First, let's create the player scene:
+Now let's create the enemy scene:
+Now let's create the HUD scene:
+Now let's create the inventory UI scene:
+Let me try that edit again:
+Now let's create the inventory slot scene:
+Now let's create the debug console scene:
+Let me try that edit again:
+Now let's create a basic test map scene:
+Now let's update the todo.md to reflect our progress:
+Now let's create a project configuration file to set up input actions:
+Let's update the todo.md again to mark the input configuration as complete:
+Now let's create a default environment resource:
+We've now completed the basic setup of our 2D ARPG prototype! Here's what we've created:
+Core Systems:
+State machine system for handling character states
+Character stats system for managing health and attributes
+Player controller with movement and combat
+Enemy AI with pathfinding and combat
+Inventory system with item stacking and drag-and-drop
+Procedural dungeon generation
+UI Systems:
+HUD with health display
+Inventory UI with item info
+Debug console with useful commands
+Project Configuration:
+Input mappings for movement, combat, and UI
+Physics layers for proper collision handling
+Default environment settings
+The next steps would be to:
+Add placeholder assets (sprites, tiles, etc.)
+Create sample items and enemies
+Add sound effects and music
+Implement additional features like save/load system
+Polish the gameplay and UI
+Would you like me to continue with any of these next steps?

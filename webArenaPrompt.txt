@@ -1,0 +1,25 @@
+Design Brief: 2D ARPG User Interface Inspired by Path of Exile
+
+Develop a high-fidelity user interface for a 2D Action RPG that emphasizes a rich loot system and robust inventory management. The UI must incorporate the following advanced features:
+
+Loot Management & Filtering:
+
+Implement dynamic filtering and sorting mechanisms for extensive loot inventories.
+Include multiple criteria (e.g., rarity, type, stats) for intuitive categorization.
+Allow for user customization of filter presets and saveable views.
+Layout & Interaction:
+
+Design a modular, adaptive layout that maintains clarity and usability across various screen sizes.
+Ensure all interactive elements offer clear visual feedback, with smooth transitions and animations.
+Prioritize an intuitive navigation flow that minimizes complexity while offering depth.
+Aesthetics & Visuals:
+
+Draw inspiration from Path of Exile’s gritty, immersive visual style while integrating a unique, forward-thinking design.
+Employ a balanced color scheme, typography, and iconography that reinforces the game’s thematic tone.
+Include innovative design cues that enhance both the aesthetics and functionality of the UI.
+Technical & Responsive Considerations:
+
+Ensure responsive design principles to adapt seamlessly to different devices.
+Optimize performance, keeping in mind the potential for high data volume and frequent UI updates.
+Provide detailed annotations on layout structure, component interactions, and user flows.
+Embrace innovative, out-of-the-box design solutions that not only meet current user expectations but also anticipate future gameplay trends. This prompt should serve as a comprehensive guide for creating a UI that is both visually engaging and functionally superior, enhancing the overall player experience.

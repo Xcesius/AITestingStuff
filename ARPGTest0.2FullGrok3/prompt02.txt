@@ -1,0 +1,188 @@
+# ADVANCED PROMPT FOR GODOT 4.X 2D ARPG BLUEPRINT GENERATION (OPTIMIZED & EXTENDED)
+
+---
+
+## AGENT INFORMATION
+- **User OS:** Windows
+- **Agent Capability:** The agent is empowered to create custom tools and utilities (e.g., editor plugins, debug consoles, automated testing scripts) as needed to enhance development efficiency and meet project goals.
+
+---
+
+## PROJECT OVERVIEW
+
+### Project Goal
+Generate a **comprehensive, scalable, and modular blueprint** for building a 2D Action RPG (ARPG) prototype in Godot Engine 4.x. This blueprint emphasizes:
+- **Scalability & Modularity:** Decoupled systems with a strong focus on data-driven design for easy expansion.
+- **Advanced Logic:** Utilization of hierarchical state machines, behavior trees, signal-based communication, and AI enhancements.
+- **Tool Integration:** Automatic generation of auxiliary tools (e.g., debug utilities, asset managers, simulation tools) to streamline workflows.
+- **Future-Proofing:** Structured suggestions for extending the prototype with features like multiplayer, procedural content generation, and advanced graphics effects.
+
+### Engine & Art Style
+- **Engine:** Godot Engine 4.x (using Forward+ renderer for 2D optimization)
+- **Art Style:** 2D Pixel Art
+- **Note:** Users will replace placeholders with custom assets (see Placeholders section below).
+
+### Target Audience
+Intermediate Godot developers familiar with scene composition, node hierarchies, GDScript, and basic editor workflows.
+
+### Target Output
+A detailed, step-by-step document that includes:
+- **Scene Structure Blueprints:** Node hierarchies for all major components (Player, Enemies, Map, UI, etc.) with textual diagrams and interaction details.
+- **GDScript Code Snippets:** Fully commented scripts adhering to Godot best practices, using modular functions, signals, and state machines.
+- **Resource Definitions:** Custom Resources (e.g., CharacterStats, ItemData) with data-driven examples and usage instructions.
+- **Editor Instructions:** Granular steps for scene creation, signal connections, input mapping, and resource integration in the Godot Editor.
+- **Testing & Debugging Steps:** Guidelines for feature testing and instructions for leveraging generated debug tools.
+- **Tool Generation Directives:** Specifications for additional tools (e.g., map visualizers, AI debuggers) with integration steps.
+
+---
+
+## PLACEHOLDERS
+Use these bracketed placeholders consistently throughout the blueprint:
+- **Asset Paths:** `[PATH_TO_PLAYER_IDLE_SPRITESHEET]`, `[PATH_TO_ENEMY_WALK_SPRITESHEET]`, `[PATH_TO_ITEM_ICON_TEXTURE]`, `[PATH_TO_DUNGEON_TILESET]`
+- **Resource Paths:** `[PATH_TO_PLAYER_DATA]`, `[PATH_TO_ENEMY_DATA]`, `[PATH_TO_ITEM_DATA_RESOURCE]`, `[PATH_TO_LOOT_TABLE_RESOURCE]`
+- **Configuration Values:** `[PLAYER_MAX_HEALTH]`, `[ENEMY_MOVE_SPEED]`, `[PLAYER_ATTACK_DAMAGE]`, `[MAP_WIDTH]`, `[ROOM_MIN_SIZE]`
+- **Animation Names:** `[PLAYER_IDLE_ANIMATION_NAME]`, `[ENEMY_ATTACK_ANIMATION_NAME]`, `[PLAYER_WALK_RIGHT_ANIMATION_NAME]`
+- **UI Element Names:** `[HEALTH_BAR_NODE_NAME]`, `[INVENTORY_GRID_NODE_NAME]`, `[MINIMAP_NODE_NAME]`
+- **Functionality Placeholders:** `[GAME_OVER_LOGIC]`, `[ITEM_USE_LOGIC]`, `[ENEMY_DEATH_EFFECTS]`
+
+---
+
+## CORE FEATURES
+
+### 1. Player Character
+- **Scene Structure:** `PlayerCharacter.tscn` (inherits `CharacterBody2D`)
+PlayerCharacter (CharacterBody2D)
+├── AnimatedSprite2D (for animations)
+├── CollisionShape2D (for physics)
+├── StateMachine (Node for managing states)
+├── Hitbox (Area2D for attack detection)
+└── AudioStreamPlayer2D (for sound effects)
+
+- **Scripts:**
+- `PlayerMovement.gd`: Advanced input handling with remappable controls and state-driven movement.
+  ```gdscript
+  extends CharacterBody2D
+
+  @export var speed := [PLAYER_MOVE_SPEED]
+  @onready var state_machine = $StateMachine
+
+  func _physics_process(delta):
+      var input_vector := Vector2.ZERO
+      input_vector.x = Input.get_axis("move_left", "move_right")
+      input_vector.y = Input.get_axis("move_up", "move_down")
+      velocity = input_vector.normalized() * speed
+      move_and_slide()
+      state_machine.update_state(input_vector)
+PlayerCombat.gd: Manages combat with dynamic hitboxes and signal emissions.
+extends Node
+
+signal damage_dealt(amount)
+
+@export var attack_damage := [PLAYER_ATTACK_DAMAGE]
+
+func perform_attack():
+    # Trigger hitbox detection and emit signal
+    emit_signal("damage_dealt", attack_damage)
+Custom Resources:
+PlayerData: Centralizes stats, inventory, and save/load data.
+extends Resource
+class_name PlayerData
+
+@export var max_health := [PLAYER_MAX_HEALTH]
+@export var inventory := []
+Tool Integration: Generate a debug overlay to visualize state transitions and collision shapes in real-time.
+
+2. Enemy Character
+Scene Structure: EnemyCharacter.tscn (inherits CharacterBody2D)
+EnemyCharacter (CharacterBody2D)
+├── AnimatedSprite2D
+├── CollisionShape2D
+├── BehaviorTree (Node for AI logic)
+├── Hurtbox (Area2D for damage detection)
+└── NavigationAgent2D (for pathfinding)
+Scripts:
+EnemyAI.gd: Implements a behavior tree for complex AI behaviors.
+extends CharacterBody2D
+
+@export var move_speed := [ENEMY_MOVE_SPEED]
+@onready var nav_agent = $NavigationAgent2D
+
+func _physics_process(delta):
+    var direction = (nav_agent.get_next_path_position() - global_position).normalized()
+    velocity = direction * move_speed
+    move_and_slide()
+EnemyCombat.gd: Handles combat logic with cooldowns and loot drops.
+extends Node
+
+signal enemy_died(loot)
+
+func on_death():
+    emit_signal("enemy_died", [LOOT_TABLE_RESOURCE])
+    queue_free()
+Custom Resources:
+EnemyData: Defines stats, behavior parameters, and loot tables.
+Tool Integration: Create an AI visualizer tool to display behavior tree decisions and pathfinding routes.
+
+
+3. Map Generation
+Procedural Generation:
+Use TileMap with MapGenerator.gd for dungeon creation.
+Implement a BSP tree algorithm for varied layouts.
+extends Node
+
+@export var map_config := [PATH_TO_MAP_CONFIG]
+
+func generate_map():
+    var map = BSPTree.new(map_config.width, map_config.height)
+    map.split_rooms()
+    $TileMap.render_map(map)
+Resource Integration:
+MapConfig: Parameters for map size, room count, and tile types.
+Tool Integration: Auto-generate a map editor tool for real-time dungeon previews and manual adjustments.
+
+4. Loot & Item System
+Custom Resources:
+ItemData: Defines item properties and scriptable behaviors.
+extends Resource
+class_name ItemData
+
+@export var name := "Item"
+@export var effect := [ITEM_USE_LOGIC]
+LootTable: Configures drop rates and item pools.
+Scenes:
+ItemPickup.tscn (inherits Area2D): Base class for all pickups.
+Tool Integration: Generate a loot simulator tool to run drop rate simulations and balance loot tables.
+
+5. User Interface (UI)
+HUD & Inventory:
+HUD.tscn: Displays health, mana, and status.
+UIManager.gd: Centralizes UI state management.
+extends Control
+
+@onready var health_bar = $[HEALTH_BAR_NODE_NAME]
+
+func update_health(value):
+    health_bar.value = value
+Additional UI Elements: Add a minimap and quest log.
+Tool Integration: Create automated scripts for UI testing and input binding.
+
+ADVANCED FEATURES & FUTURE-PROOFING
+Plugin System: Structure code to support content packs (e.g., new enemies, items) via plugins.
+Multiplayer Readiness: Use a global event bus for networked events.
+Procedural Content: Expand map generation with dynamic events and quests.
+Performance Optimization: Implement object pooling for projectiles and enemies.
+Enhanced AI: Transition to behavior trees for scalable enemy logic.
+
+BLUEPRINT GENERATION DIRECTIVES
+Modularity: Separate each component into distinct scenes and scripts.
+Data-Driven Design: Use Resources for all game data, editable via JSON or Godot’s editor.
+State Machines: Implement hierarchical state machines for player and enemy behaviors.
+Signals: Use signals for all major interactions (e.g., damage_dealt, item_picked_up).
+Tools: Generate custom tools with tool mode for debugging and automation.
+Documentation: Include detailed comments and sectioned instructions.
+
+CONCLUSION
+This optimized blueprint provides a robust, scalable foundation for a 2D ARPG in Godot 4.x. Its modular design, advanced logic, and integrated tools ensure flexibility and ease of expansion, empowering developers to build upon it for their unique game vision.
+
+FINAL NOTE
+The agent may generate additional tools or scripts as needed to enhance the blueprint. Users are encouraged to adapt and extend this framework to suit their specific project requirements.
