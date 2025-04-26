@@ -1,0 +1,36 @@
+[PROMPT]
+
+[CHARACTER=Paladin]
+[VARIANT_THEME_1=Holy Vindicator] // Sheet 1 Theme
+[VARIANT_THEME_2=Shadow Crusader] // Sheet 2 Theme
+[VARIANT_THEME_3=Ancient Protector] // Sheet 3 Theme
+
+[STYLE=pixel-art-2D-ARPG, 64x64-sprite-resolution, isometric-perspective, diablo-2-inspired, limited-color-palette-16-colors, distinct-dark-outlines, top-left-lighting, moderate-dithering-for-shading]
+[2DTO3D=no]
+
+Create THREE cohesive sprite sheets, each representing a different variant of the Paladin based on the specified VARIANT_THEME.
+
+// --- Sheet Structure (Repeated for each of the THREE sheets) ---
+
+[SHEET_N] // Where N is 1, 2, or 3
+
+  ─ROW 1 – 8‑View Base Model ─
+  • Render a base Paladin model (appropriate for [VARIANT_THEME_N]) in a natural idle pose, viewed from 8 directions (front, 45°, side, 135°, back, 225°, other side, 315°).
+  • Match the defined [STYLE] precisely.
+  • Ensure the base model is consistent in proportion and core design across all three sheets, varying primarily in thematic details/base armor reflecting the [VARIANT_THEME_N].
+
+  ─ ROW 2 – Adaptive Equipment Grid ─
+  • Auto‑invent 8–12 distinct gear/prop items specifically suited to the [CHARACTER] and the [VARIANT_THEME_N] for this sheet.
+  • Items MUST be distinct within this sheet AND distinct from items on the other two sheets.
+  • Cover slots: headwear, chest-armor, gloves/bracers, legwear/greaves, boots, main-hand-weapon, off-hand-item (e.g., shield, libram), thematic-accessory (e.g., cape, banner).
+  • Render each item in its own grid cell at a clear, representative icon angle (usually front or 3/4 view).
+  • Design items *intended* to visually fit the ROW 1 base model for this sheet without obvious clipping when layered.
+  • Match the defined [STYLE] precisely.
+
+// --- Global Constraints (Apply to ALL sheets) ---
+• Ensure all three sheets are visually unified by the core [STYLE] (palette, light direction, line weight, pixel density) while reflecting their unique [VARIANT_THEME_N].
+• Use power‑of‑two canvases ≤ 1024 × 1024 px (Adjust size as needed, 2048x2048 is large for this content unless sprites are very high-res).
+• Leave adequate padding around sprites and grid items (e.g., 2-4 pixels) for atlas packing.
+• Output **only** the three finished sprite sheet images—no explanatory text.
+
+[/PROMPT]

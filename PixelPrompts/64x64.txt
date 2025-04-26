@@ -1,0 +1,9 @@
+Create a power‑of‑two pixel‑art sprite sheet (576×960 px) composed of 64×64 px tiles arranged in 9 columns (3 transparent‐pixel gutters) and 15 rows. The sheet features a {CHARACTER_DESCRIPTION} with {ATTIRE_AND_COLOR_PALETTE}, rendered in a natural idle pose and a three‑frame {ATTACK_NAME} attack, all in a consistent single‑pixel outline style with a top‑left light source and 2–3 levels of shading.
+
+— Rows 1–3 (Walk South): idle, left‑step, right‑step cycle (duplicated for a smooth 6‑frame loop)  
+— Rows 4–6 (Walk West): same 3‑frame cycle, mirrored horizontally  
+— Rows 7–9 (Walk East): original orientation 3‑frame cycle  
+— Rows 10–12 (Walk North): back‑view idle, left‑step, right‑step (duplicated)  
+— Rows 13–15 ({ATTACK_NAME}): three‑frame attack swing with white arc effect (duplicated for 6 frames)
+
+No labels or text—output only the finished sprite sheet.

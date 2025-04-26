@@ -1,0 +1,11 @@
+[gd_scene format=3]
+
+[node name="HUD" type="CanvasLayer"]
+
+[node name="[HEALTH_BAR_NODE_NAME]" type="ProgressBar" parent="."]
+
+[node name="[HEALTH_LABEL_NODE_NAME]" type="Label" parent="."]
+
+[node name="InventoryUI" parent="." instance=ExtResource( 1 )]
+
+[ext_resource path="res://UI/InventoryUI.tscn" type="PackedScene" id=1] 

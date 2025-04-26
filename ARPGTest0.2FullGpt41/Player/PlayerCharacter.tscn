@@ -1,0 +1,29 @@
+[gd_scene format=3]
+
+[node name="PlayerCharacter" type="CharacterBody2D"]
+script = ExtResource("res://Player/PlayerMovement.gd")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = ExtResource("[PATH_TO_PLAYER_IDLE_SPRITESHEET]")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = ExtResource("[PATH_TO_PLAYER_COLLISION_SHAPE]")
+
+[node name="AttackHitbox" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackHitbox"]
+shape = ExtResource("[PATH_TO_ATTACK_HITBOX_SHAPE]")
+
+[node name="AttackCooldown" type="Timer" parent="."]
+wait_time = [PLAYER_ATTACK_COOLDOWN]
+one_shot = true
+autostart = false
+
+[node name="Inventory" type="Node" parent="."]
+script = ExtResource("res://Player/Inventory.gd")
+
+[ext_resource path="res://Player/PlayerMovement.gd" type="Script" id=1]
+[ext_resource path="res://Player/Inventory.gd" type="Script" id=2]
+[ext_resource path="[PATH_TO_PLAYER_IDLE_SPRITESHEET]" type="SpriteFrames" id=3]
+[ext_resource path="[PATH_TO_PLAYER_COLLISION_SHAPE]" type="Shape2D" id=4]
+[ext_resource path="[PATH_TO_ATTACK_HITBOX_SHAPE]" type="Shape2D" id=5] 

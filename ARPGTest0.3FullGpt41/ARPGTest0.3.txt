@@ -1,0 +1,142 @@
+[PROMPT]
+START - ADVANCED PRODUCTION-GRADE ARPG BLUEPRINT GENERATION PROMPT FOR GODOT 4.2+ (2D)
+AGENT META-INSTRUCTIONS:
+Proactive Problem Solving: Anticipate potential development bottlenecks, integration challenges, or performance issues. Propose and generate solutions (tools, utilities, alternative architectures) proactively.
+Justify Choices: Briefly explain the rationale behind significant architectural decisions (e.g., why a specific node type, communication pattern, or data structure was chosen).
+Assume Professional Context: Target the output towards an experienced development team familiar with Godot and software engineering principles.
+Prioritize Robustness & Scalability: Design systems not just for the prototype, but with clear pathways for expansion into a full-scale production environment.
+Strict Adherence: Follow the requested structure, formatting, and placeholder conventions meticulously.
+AGENT CONTEXT:
+User OS: Windows
+Agent Autonomy: You are empowered and expected to design and generate custom Godot editor plugins (@tool scripts), command-line utilities, debugging overlays, data validators, and workflow automation scripts as integral parts of the blueprint. Document their usage thoroughly.
+Expected Output Format: A comprehensive, richly structured technical design document suitable for professional game development, emphasizing scalability and maintainability. Use Markdown for formatting.
+Target Godot Version: Godot Engine 4.2 or later. Specify if features rely on versions newer than 4.2.
+PROJECT OVERVIEW:
+Objective: Design and document a highly scalable, deeply modular, and production-ready blueprint for a 2D Action RPG prototype using Godot Engine 4.2+. This blueprint must serve as a solid foundation for significant future expansion.
+Core Principles:
+Extreme Modularity: Systems designed as independent, reusable components or plugins with well-defined interfaces (using GDScript's duck-typing or explicit classes). Minimal hard dependencies.
+Data-Driven Architecture: All significant gameplay parameters, content definitions, and configurations (stats, items, abilities, enemies, loot, map rules, UI layouts) defined in external Resource files or easily parsable formats (e.g., JSON, potentially managed via custom importers). Include data validation mechanisms.
+Robust Logic Implementation: Employ advanced patterns like Hierarchical State Machines (HSMs), a central Event Bus for decoupled communication, and potentially Service Locators or Dependency Injection for managing core systems.
+Integrated Toolchain: Generate essential workflow enhancement, debugging, data management, and testing tools/scripts alongside the core systems. These tools are required, not optional.
+Testability & QA: Design systems with testability in mind. Include specific testing procedures and hooks for potential automated testing frameworks.
+Performance Awareness: Include considerations and initial hooks for performance profiling and optimization (e.g., efficient node processing, object pooling recommendations).
+Forward-Compatibility: Architect systems with explicit hooks and recommendations for future integration of complex features like authoritative multiplayer networking, advanced AI (Behavior Trees, GOAP), procedural content generation (quests, events), robust serialization, and modding support.
+DELIVERABLE STRUCTURE:
+Executive Summary: Brief overview of the proposed architecture, key patterns used, and major generated tools.
+Core Architecture:
+Scene Composition Strategy: How scenes are composed and interact.
+Communication Patterns: Detailed explanation of the chosen Event Bus implementation, Signal usage conventions (when to use direct signals vs. the bus), and any Service Locator/DI patterns.
+Data Management: Strategy for organizing, loading, and validating Resource files. Versioning considerations for resources.
+Project Setup: Recommended project settings (rendering, physics layers/masks, input map conventions, autoloads).
+System Blueprints (Detailed sections for each core system):
+Scene/Node Hierarchies: Diagrams (ASCII or textual) and detailed breakdowns. Justify node choices.
+GDScript Implementation: Full, heavily commented GDScript code (.gd). Adhere strictly to GDScript best practices (type hints, docstrings). Include error handling and assertions where appropriate.
+Resource Definitions: Custom Resource class definitions (.gd) with clear field explanations. Include sample .tres or equivalent data representations.
+Godot Editor Workflow: Step-by-step setup instructions within the Godot Editor (scene setup, node configuration, resource creation/assignment, signal connections).
+Testing & Debugging Procedures: Specific steps to test functionality. Description of associated debug tools/visualizers.
+Generated Custom Tools & Utilities: Detailed description, usage instructions, and integration steps for any generated tools specific to this system.
+Scalability & Future Expansion: Concrete points on extending the system, integrating advanced features (list specific examples like networking models, AI algorithms), and potential refactoring pathways.
+Global Systems & Managers: (e.g., Global Event Bus, Game State Manager, Asset Loader, Save/Load System stubs)
+Generated Toolchain Summary: Consolidated list and documentation access points for all generated tools/utilities.
+Placeholder Reference: Clear definition of the placeholder syntax [BRACKETED_UPPERCASE] and a list of critical placeholders used throughout the document.
+SYSTEM-SPECIFIC REQUIREMENTS:
+Player Character (PlayerCharacter.tscn)
+Base Node: CharacterBody2D (Justify).
+Core Components (Consider separate Nodes/Scripts for modularity):
+PlayerMovementController.gd: Input handling (support for buffering), physics-based movement, Hierarchical State Machine (Idle, Walk, Run, Dodge, Interact states), animation synchronization via AnimationPlayer or AnimatedSprite2D.
+PlayerCombatController.gd: Attack execution (melee/ranged placeholders), hitbox management (dynamic Area2D or CollisionShape2D activation), damage application logic, combat state machine (Attack, Hurt, Block/Parry placeholders).
+PlayerStatsComponent.gd: Manages CharacterStats resource, handles stat modifications, emits signals on changes (e.g., health change).
+PlayerInventoryComponent.gd: Manages Inventory resource, handles item pickup logic (interaction with ItemPickup scene), item use delegation ([ITEM_USE_LOGIC] placeholder).
+PlayerInteraction.gd: Handles detection and initiation of interactions with world objects (e.g., NPCs, chests, item pickups) using Area2D.
+Resources:
+CharacterStats.gd (extends Resource): Health, Mana/Stamina, Move Speed, Attack Power, Defense, Crit Chance, etc. [DEFINE_CORE_STATS].
+Inventory.gd (extends Resource): Manages a collection of ItemData references or unique item instances. Define capacity [INVENTORY_CAPACITY].
+Debug/Tools:
+REQUIRED: In-game visual debugger overlay showing current state (state machine), velocity, collision shapes, and key stats. Toggleable via debug command/key.
+REQUIRED: Input log/debugger tool.
+Enemy Character (EnemyCharacter.tscn)
+Base Node: CharacterBody2D (Justify).
+Core Components:
+EnemyAIController.gd: AI logic, Hierarchical State Machine (e.g., Idle, Patrol, Chase, Attack, Flee, Hurt). Implement basic state transitions based on detection range [ENEMY_SIGHT_RANGE], [ENEMY_HEARING_RANGE], and health thresholds. Use NavigationAgent2D for pathfinding towards target [PLAYER_REFERENCE_METHOD]. Include pathfinding failure/fallback logic.
+EnemyCombatController.gd: Attack patterns (melee/ranged placeholders), attack cooldowns [ENEMY_ATTACK_COOLDOWN], damage dealing, state integration with EnemyAIController.
+EnemyStatsComponent.gd: Manages EnemyStats resource. Emits died signal when health reaches zero.
+EnemyLootDropper.gd: Connects to EnemyStatsComponent.died signal. Uses LootTable resource to determine and spawn drops. Placeholder for [ENEMY_DEATH_EFFECTS].
+Resources:
+EnemyStats.gd (extends CharacterStats or new Resource): Includes base stats plus AI-specific parameters (aggro radius, leash distance, etc.).
+LootTable.gd (extends Resource): Defines weighted lists of potential ItemData resources or other loot types (e.g., currency). Structure for defining weights and quantities.
+AI Archetypes: Provide hooks or examples for easily creating variations (e.g., Melee Aggressive, Ranged Kiter, Support Healer).
+Debug/Tools:
+REQUIRED: AI State Visualizer: In-editor tool or in-game overlay showing current AI state, target, navigation path, and key decision parameters.
+REQUIRED: AI Log Panel: Dockable editor plugin or in-game console outputting AI state changes and actions for selected enemies.
+Procedural Map Generation (MapGenerator.tscn or Autoload)
+System: MapGenerator.gd script managing a TileMap node.
+Algorithm: Implement one basic algorithm (e.g., Simple Rooms and Corridors OR Cellular Automata). Design should allow plugging in other algorithms later.
+Configuration: Use a MapConfig.gd (extends Resource) to define parameters: map dimensions [MAP_WIDTH], [MAP_HEIGHT], room size constraints [ROOM_MIN_SIZE], [ROOM_MAX_SIZE], corridor width [CORRIDOR_WIDTH], enemy/object spawn density [SPAWN_DENSITY].
+Features: Tile placement, enemy spawn point generation, item/chest placement hooks, player start position definition. Connection to TileSet.
+Resources:
+MapConfig.gd (as above).
+Godot TileSet resource configured with appropriate tiles (walls, floors, decorations) and physics/navigation layers. [PATH_TO_TILESET_RESOURCE]
+Tools:
+REQUIRED: In-Editor Map Preview Tool: An editor plugin panel (@tool script) allowing regeneration of the map preview within the editor using different random seeds. Visualize generated layout, spawn points.
+REQUIRED: Map Data Validator: Script to check generated map data for errors (e.g., unreachable areas - basic check, invalid tile placements).
+Loot & Items System
+Resources:
+ItemData.gd (extends Resource): Base class for items. Fields: item_name (String), description (String), icon (Texture2D - [PATH_TO_ITEM_ICON_TEXTURE]), stackable (bool), max_stack_size (int), item_type (Enum: Weapon, Armor, Consumable, Material, Quest [DEFINE_ITEM_TYPES]), rarity (Enum: Common, Uncommon, Rare, Epic [DEFINE_RARITIES]). Sub-classes for specific types (e.g., WeaponData, ConsumableData) adding relevant stats (damage, heal_amount, stat_bonuses).
+LootTable.gd (as defined in Enemy section).
+Scene: ItemPickup.tscn
+Root: Area2D (for detection).
+Nodes: Sprite2D (to display item icon), CollisionShape2D.
+Script: ItemPickup.gd. Holds an ItemData resource reference. Emits a signal item_picked_up(item_data) when collected (e.g., by player entering Area2D and interacting). Handles its own destruction after pickup.
+Integration: EnemyLootDropper spawns ItemPickup scenes. PlayerInventoryComponent listens for interactions with ItemPickup.
+Tools:
+REQUIRED: Loot Table Simulator/Tester: An editor tool (@tool script or separate utility) that runs N simulations of a specific LootTable resource and outputs the resulting drop distribution statistics. Essential for balancing.
+REQUIRED: Item Database Viewer/Editor: A simple editor plugin to browse, view, and potentially edit created ItemData resources within the project.
+User Interface (UI)
+Scene: HUD.tscn (CanvasLayer)
+Nodes: ProgressBar for Health [HEALTH_BAR_NODE], ProgressBar for Mana/Stamina [RESOURCE_BAR_NODE], Label for stats/messages [STATUS_LABEL_NODE], potentially TextureRect for minimap [MINIMAP_NODE], interaction prompts [INTERACTION_PROMPT_NODE].
+Script: HUDController.gd. Connects to signals from PlayerStatsComponent (e.g., health_changed, resource_changed) and potentially other global events to update UI elements dynamically.
+Scene: InventoryUI.tscn (CanvasLayer or Control node)
+Nodes: GridContainer [INVENTORY_GRID_NODE] populated with ItemSlot.tscn instances. Logic for displaying items from Inventory resource.
+Script: InventoryUIController.gd. Handles showing/hiding the UI. Implements drag-and-drop functionality between slots, item splitting/stacking, and item usage/equip triggers (connecting to [ITEM_USE_LOGIC] via PlayerInventoryComponent).
+Scene: ItemSlot.tscn (Control node): Displays a single item icon, quantity, potentially rarity border. Handles mouse events for tooltips and drag operations.
+Scene: DebugOverlay.tscn (CanvasLayer): Container for displaying runtime debug information (FPS, player state, AI states, console output). Controlled via a global debug manager or autoload.
+Tools:
+REQUIRED: UI Style Guide/Theme Resource: Define a base Godot Theme resource [PATH_TO_UI_THEME_RESOURCE] to ensure consistent UI appearance.
+REQUIRED: Input Binding Helper: Script or documentation outlining the setup for common UI actions (Toggle Inventory, Toggle Menu, Use Item Hotkey) in the Input Map.
+ARCHITECTURE & IMPLEMENTATION GUIDELINES:
+Modularity: Enforce separation. Use interfaces (duck-typing) or base classes for components that need to be swapped or extended (e.g., different AI behaviors, movement types). Avoid hard-coded references between major systems; use the Event Bus or dependency injection.
+Data-First: Validate resource data on load where feasible (e.g., using _validate_property() in Resource scripts or dedicated validator tools). Consider tools to import data from spreadsheets (CSV/JSON) into Godot Resources.
+State Machines: Implement using clear state classes/functions. Prefer Hierarchical State Machines for complexity management in Player/Enemy AI. Document states and transitions clearly. Consider visual state machine plugins if beneficial, but provide a code-based fallback.
+Event Bus: Implement a global Autoload script (EventBus.gd) for decoupling. Define clear event names/constants. Document all major events, their payloads, and typical senders/listeners. Provide guidance on when not to use the event bus (e.g., for tightly coupled component interactions).
+Groups & Layers: Define and document a strict convention for Node groups (e.g., "enemies", "interactables") and Physics Layers/Masks (e.g., Player, Enemy, World, Projectile, Hitbox). Generate a helper script or documentation page listing these conventions.
+Tool Scripts: All editor tools must use @tool annotation. Ensure they are robust and provide clear user feedback within the editor. Place tool scripts in a dedicated addons/ or tools/ directory.
+Error Handling & Logging: Implement basic error handling (e.g., checking resource validity). Integrate a simple logging mechanism (potentially toggleable levels: Debug, Info, Warning, Error) perhaps via an Autoload.
+Code Style: Adhere to the official GDScript style guide. Use static typing extensively. Write comprehensive docstrings for classes, methods, and signals.
+PLACEHOLDER INSTRUCTIONS:
+Use clearly defined, bracketed, uppercase placeholders like [PLACEHOLDER_NAME] for values, paths, node references, configurations, and logic stubs that need concrete implementation.
+Provide a list of all major placeholders used at the end of the document for easy searching and replacement.
+Examples: [PATH_TO_PLAYER_SPRITESHEET], [PLAYER_MAX_HEALTH], [ENEMY_ATTACK_ANIMATION], [HEALTH_BAR_NODE], [GAME_OVER_LOGIC], [ITEM_USE_LOGIC], [DATABASE_CONNECTION_STRING].
+ADVANCED/FUTURE-READY EXTENSIONS NOTES (Per System):
+Scalability: How can this system handle 10x the content (items, enemies, map size)? What are potential performance bottlenecks?
+Advanced Features:
+Networking: Where would hooks for state synchronization (player/enemy position, stats, actions) go? What changes are needed for an authoritative server model?
+AI: How to integrate Behavior Trees or Goal-Oriented Action Planning (GOAP)? How to support squad behaviors or complex boss patterns?
+Content: How to support DLC, modding (loading external resources/scripts)? How to manage large numbers of items/enemies efficiently?
+Environment: Hooks for dynamic weather, day/night cycles, environmental hazards affecting gameplay.
+Other: Procedural quests, dialogue systems, crafting/upgrading systems.
+Refactorability: Are there parts of the design that might become complex? Suggest potential future refactoring (e.g., breaking down large controllers, abstracting data access).
+PRESENTATION/OUTPUT INSTRUCTIONS:
+Structure: Use Markdown with clear H1/H2/H3 headings for sections and sub-sections.
+Lists: Use numbered lists for step-by-step instructions, bulleted lists for options/features.
+Code Blocks: Use triple backticks with gdscript language identifier for all code examples. Comment code extensively, explaining the why not just the what.
+Emphasis: Use bold for key terms, NodeNames, ResourceTypes, file_names.gd, and signal_names. Use italics for emphasis on concepts.
+Documentation: Write clear, concise explanations. Assume a professional audience but avoid unnecessary jargon where simpler terms suffice. Include docstrings (## Docstring...) for all classes and public methods/signals.
+Tool Integration: Clearly document the purpose, usage, and integration steps for every generated tool or utility.
+Cross-Referencing: Refer back to previously defined concepts, resources, or scenes explicitly (e.g., "See PlayerStatsComponent in Section 3.1").
+Diagrams: Use ASCII diagrams or clear textual descriptions for hierarchies and flows where helpful.
+FINAL AGENT NOTES:
+You are an architect and tool developer. Your primary goal is to deliver a robust, extensible, and developer-friendly foundation.
+Generate code that is not just functional but also clean, maintainable, and follows best practices.
+If multiple valid architectural approaches exist for a specific problem, briefly mention alternatives and justify your chosen path.
+Conclude each major system section with a summary of its capabilities, limitations, and immediate next steps for development.
+END OF PROMPT

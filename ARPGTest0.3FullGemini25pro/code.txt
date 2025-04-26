@@ -1,0 +1,888 @@
+
+*   **GDScript Implementation:**
+
+    *   **`EnemyAIController.gd`:**
+        ```gdscript
+        ## EnemyAIController: Manages AI behavior using a state machine and navigation.
+        extends Node
+
+        # Required Node Paths / Components
+        @export var character_body: CharacterBody2D = null
+        @export var stats_component: Node = null # EnemyStatsComponent
+        @export var combat_controller: Node = null # EnemyCombatController
+        @export var navigation_agent: NavigationAgent2D = null
+        @export var detection_area: Area2D = null
+        @export var animated_sprite: AnimatedSprite2D = null # Or AnimationPlayer
+
+        # AI Parameters (Consider moving to EnemyStats resource)
+        @export var move_speed: float = 75.0
+        @export var acceleration: float = 15.0
+        @export var friction: float = 20.0
+        @export var patrol_range: float = 200.0 # How far to move when patrolling
+        @export var detection_range: float = 300.0 # Set dynamically via DetectionArea's shape radius
+        @export var chase_stop_distance: float = 50.0 # How close to get to player when chasing
+        @export var leash_distance: float = 600.0 # How far from spawn/start before returning
+
+        enum State { IDLE, PATROL, CHASE, ATTACK, HURT, FLEE, RETURN } # Example HSM states
+        var current_state: State = State.IDLE
+
+        var player_target: Node2D = null # Reference to the player node when detected
+        var start_position: Vector2 = Vector2.ZERO
+        var patrol_target_position: Vector2 = Vector2.ZERO
+        var state_timer: float = 0.0 # Generic timer for states like IDLE or PATROL wait
+
+        # Navigation path update frequency
+        const NAVIGATION_UPDATE_INTERVAL = 0.5
+        var navigation_timer: float = 0.0
+
+        func _ready():
+            assert(character_body != null, "EnemyAIController: CharacterBody node not assigned.")
+            assert(stats_component != null, "EnemyAIController: StatsComponent node not assigned.")
+            assert(combat_controller != null, "EnemyAIController: CombatController node not assigned.")
+            assert(navigation_agent != null, "EnemyAIController: NavigationAgent2D node not assigned.")
+            assert(detection_area != null, "EnemyAIController: DetectionArea node not assigned.")
+
+            start_position = character_body.global_position
+            patrol_target_position = start_position # Initial patrol target
+
+            # Connect signals
+            detection_area.body_entered.connect(_on_detection_area_body_entered)
+            detection_area.body_exited.connect(_on_detection_area_body_exited)
+            navigation_agent.velocity_computed.connect(_on_navigation_velocity_computed)
+            # Connect to stats component death signal to potentially stop AI logic
+            stats_component.died.connect(_on_death, CONNECT_ONE_SHOT)
+
+            # Set detection radius dynamically based on variable (optional)
+            var collision_shape = detection_area.get_child(0) as CollisionShape2D
+            if collision_shape and collision_shape.shape is CircleShape2D:
+                 (collision_shape.shape as CircleShape2D).radius = detection_range
+            else:
+                 print("Warning: Enemy DetectionArea shape not found or not CircleShape2D. Using default shape size.")
+
+
+        func _physics_process(delta: float):
+            if current_state == State.HURT: # Hurt state might pause normal updates
+                # Handle hurt state logic (e.g., brief stun timer)
+                state_timer -= delta
+                if state_timer <= 0:
+                    # Transition back based on health or player proximity
+                    evaluate_state_after_hurt()
+                apply_friction(delta) # Apply friction even when hurt potentially
+                character_body.move_and_slide()
+                return # Skip normal state logic while hurt
+
+            navigation_timer -= delta
+            update_state(delta) # Determine the correct state
+            execute_state_logic(delta) # Execute actions for the current state
+            update_animation()
+
+        func update_state(delta):
+            # State transition logic (Example priority: Flee > Chase > Attack > Patrol > Idle)
+            var distance_to_player = INF
+            if is_instance_valid(player_target):
+                distance_to_player = character_body.global_position.distance_to(player_target.global_position)
+
+            var distance_from_start = character_body.global_position.distance_to(start_position)
+
+            # Check health for Flee state (if implemented)
+            # if stats_component.get_current_health() / stats_component.get_max_health() < 0.2: # e.g., Flee below 20% HP
+            #     if current_state != State.FLEE: change_state(State.FLEE); return
+
+            # Check leash distance
+            if distance_from_start > leash_distance and current_state != State.RETURN:
+                 print("Enemy leashed, returning.")
+                 player_target = null # Lose target when returning
+                 change_state(State.RETURN)
+                 return
+
+            # Check if player is still valid and in range
+            if is_instance_valid(player_target):
+                if distance_to_player <= combat_controller.get_attack_range(): # Requires attack range info from combat controller
+                    if current_state != State.ATTACK and combat_controller.can_attack():
+                         change_state(State.ATTACK)
+                elif distance_to_player <= detection_range: # Player in sight, but not attack range
+                    if current_state != State.CHASE:
+                        change_state(State.CHASE)
+                else: # Player lost or out of range (but was targeted before)
+                     player_target = null # Lose target
+                     print("Enemy lost player target.")
+                     # Decide: Go idle or return to patrol?
+                     change_state(State.PATROL) # Go back to patrolling
+            else: # No player target currently
+                 if current_state == State.CHASE or current_state == State.ATTACK:
+                     # Was chasing/attacking but lost target
+                     change_state(State.PATROL) # Or IDLE
+                 elif current_state == State.RETURN:
+                     # Continue returning until close to start
+                     if distance_from_start < 10.0: # Close enough to start
+                         change_state(State.IDLE) # Or PATROL
+                 elif current_state == State.IDLE:
+                     state_timer -= delta
+                     if state_timer <= 0:
+                         change_state(State.PATROL) # Decide to patrol after idling
+                 elif current_state == State.PATROL:
+                     # Check if reached patrol destination
+                     if character_body.global_position.distance_to(patrol_target_position) < 10.0:
+                         change_state(State.IDLE) # Wait before choosing next point
+
+
+        func execute_state_logic(delta: float):
+            match current_state:
+                State.IDLE:
+                    apply_friction(delta)
+                    # Wait timer handled in update_state
+                State.PATROL:
+                    # Navigate towards patrol_target_position
+                    if navigation_timer <= 0:
+                         navigation_agent.target_position = patrol_target_position
+                         navigation_timer = NAVIGATION_UPDATE_INTERVAL
+                    # Movement is handled by _on_navigation_velocity_computed
+                    if navigation_agent.is_navigation_finished():
+                         # Reached destination (or failed), go Idle
+                         change_state(State.IDLE)
+                State.CHASE:
+                    if is_instance_valid(player_target):
+                        # Navigate towards player, stopping slightly before
+                        var target_pos = player_target.global_position
+                        var direction_to_player = (target_pos - character_body.global_position).normalized()
+                        # Stop slightly before the player based on chase_stop_distance
+                        var desired_pos = target_pos - direction_to_player * chase_stop_distance
+
+                        if navigation_timer <= 0:
+                            navigation_agent.target_position = desired_pos
+                            navigation_timer = NAVIGATION_UPDATE_INTERVAL # Update path periodically
+                    else:
+                        # Player lost, handled in update_state
+                        apply_friction(delta)
+                State.ATTACK:
+                    # Stop moving (or adjust position slightly based on attack)
+                    apply_friction(delta)
+                    # Trigger attack in CombatController
+                    if combat_controller.can_attack():
+                         combat_controller.perform_attack(player_target) # Pass target if needed
+                    # CombatController handles cooldown; AI might need to wait or reposition
+                    # Transition back to CHASE or IDLE should happen in update_state after attack finishes
+                State.RETURN:
+                    # Navigate back to start_position
+                    if navigation_timer <= 0:
+                        navigation_agent.target_position = start_position
+                        navigation_timer = NAVIGATION_UPDATE_INTERVAL
+                    # Movement handled by navigation signal
+                # [ADD_FLEE_LOGIC: Navigate away from player_target]
+
+            # Common movement application outside match if using navigation agent primarily
+            if not navigation_agent.is_navigation_finished() and not current_state in [State.IDLE, State.ATTACK, State.HURT]:
+                 var current_agent_velocity = navigation_agent.get_next_path_position() - character_body.global_position
+                 var desired_velocity = current_agent_velocity.normalized() * move_speed
+                 # Use agent's velocity computation if available and reliable
+                 # character_body.velocity = character_body.velocity.move_toward(desired_velocity, acceleration * delta)
+                 # Let the signal handle velocity instead:
+                 pass # Velocity applied in _on_navigation_velocity_computed
+            else:
+                 # Apply friction if navigation is finished or not actively moving via nav agent
+                 apply_friction(delta)
+
+            character_body.move_and_slide()
+
+
+        func change_state(new_state: State):
+            if current_state == new_state: return
+            # print("Enemy State Change: ", State.keys()[current_state], " -> ", State.keys()[new_state]) # Debug
+
+            # --- Exit logic for old state ---
+            match current_state:
+                State.ATTACK:
+                    combat_controller.cancel_attack() # If attack can be interrupted
+
+            current_state = new_state
+
+            # --- Entry logic for new state ---
+            match new_state:
+                State.IDLE:
+                    state_timer = randf_range(1.0, 3.0) # Idle for 1-3 seconds
+                    navigation_agent.target_position = character_body.global_position # Stop moving
+                State.PATROL:
+                    # Choose a new random patrol point within range
+                    var random_offset = Vector2(randf_range(-patrol_range, patrol_range), randf_range(-patrol_range, patrol_range))
+                    patrol_target_position = start_position + random_offset
+                    # Optional: Clamp patrol_target_position to stay within valid nav mesh area
+                    patrol_target_position = NavigationServer2D.map_get_closest_point(navigation_agent.get_navigation_map(), patrol_target_position)
+                    navigation_timer = 0 # Update nav target immediately
+                State.CHASE:
+                    navigation_timer = 0 # Update nav target immediately
+                State.ATTACK:
+                    # Stop movement immediately
+                    navigation_agent.target_position = character_body.global_position
+                    character_body.velocity = Vector2.ZERO
+                State.HURT:
+                     state_timer = 0.3 # Stun duration
+                     character_body.velocity = Vector2.ZERO # Stop movement
+                     # Optional: Apply knockback velocity here
+                State.RETURN:
+                     navigation_timer = 0
+                # [ADD_FLEE_ENTRY_LOGIC]
+
+
+        func apply_friction(delta: float):
+            character_body.velocity = character_body.velocity.move_toward(Vector2.ZERO, friction * delta)
+
+        func update_animation():
+            if animated_sprite == null: return
+
+            var anim_name = "[ENEMY_IDLE_ANIMATION]"
+            match current_state:
+                State.PATROL, State.CHASE, State.RETURN: # [ADD_FLEE]
+                    anim_name = "[ENEMY_WALK_ANIMATION]"
+                    # Flip sprite based on velocity
+                    if character_body.velocity.x != 0:
+                        animated_sprite.flip_h = character_body.velocity.x < 0
+                State.ATTACK:
+                    # Attack animation handled by EnemyCombatController ideally
+                    # Make sure walk animation doesn't override it
+                    return # Let CombatController handle anim during attack
+                State.HURT:
+                    anim_name = "[ENEMY_HURT_ANIMATION]"
+
+            # Prevent walk animation from interrupting attack etc.
+            if current_state != State.ATTACK and animated_sprite.animation != anim_name:
+                 animated_sprite.play(anim_name)
+
+        # --- Signal Callbacks ---
+        func _on_detection_area_body_entered(body: Node2D):
+             # Check if the body is the player (use group or check class/node name)
+             # Assuming Player scene root is added to "player" group
+             if body.is_in_group("player"):
+                 print("Enemy detected player: ", body.name)
+                 player_target = body # Store reference to player
+
+
+        func _on_detection_area_body_exited(body: Node2D):
+             if body == player_target:
+                 print("Enemy lost sight of player: ", body.name)
+                 # Don't nullify immediately, let update_state handle based on distance/leash
+                 # player_target = null # Or handle timeout logic
+
+
+        func _on_navigation_velocity_computed(safe_velocity: Vector2):
+            # Use the velocity calculated by the NavigationAgent
+            character_body.velocity = character_body.velocity.move_toward(safe_velocity, acceleration * get_physics_process_delta_time())
+
+
+        func _on_death():
+            print("Enemy AI received death signal. Stopping AI.")
+            set_physics_process(false) # Stop AI updates
+            # Ensure velocity is zeroed
+            character_body.velocity = Vector2.ZERO
+            # Optional: Play death animation here if not handled elsewhere
+            # change_state(State.DEAD) # Add a DEAD state if needed
+
+
+        # --- Public methods ---
+        # Called by CombatController when enemy gets hit
+        func enter_hurt_state():
+             if current_state != State.HURT: # Avoid re-entering if already hurt
+                 change_state(State.HURT)
+                 # [ADD_KNOCKBACK_LOGIC: Apply impulse to character_body.velocity]
+
+        func evaluate_state_after_hurt():
+             # Decide where to go after recovering from hurt
+             # Example: If player still close, maybe chase, otherwise patrol/idle
+             if is_instance_valid(player_target) and character_body.global_position.distance_to(player_target.global_position) <= detection_range:
+                 change_state(State.CHASE)
+             else:
+                 change_state(State.PATROL) # Or IDLE
+
+        # Method for Debug Tool
+        func get_ai_state_info() -> Dictionary:
+             return {
+                 "state": State.keys()[current_state],
+                 "target": str(player_target.name) if is_instance_valid(player_target) else "None",
+                 "destination": navigation_agent.target_position,
+                 "distance_to_target": character_body.global_position.distance_to(player_target.global_position) if is_instance_valid(player_target) else INF
+             }
+        ```
+    *   **`EnemyCombatController.gd`:**
+        ```gdscript
+        ## EnemyCombatController: Handles enemy attack logic, cooldowns, and damage dealing.
+        extends Node
+
+        # Required Components
+        @export var stats_component: Node = null # EnemyStatsComponent
+        @export var ai_controller: Node = null # EnemyAIController
+        @export var animated_sprite: AnimatedSprite2D = null # Or AnimationPlayer
+        @export var hitbox_area: Area2D = null # Optional: For melee attacks
+
+        # Combat Parameters (Consider moving to EnemyStats resource)
+        @export var attack_damage: float = 8.0
+        @export var attack_range: float = 60.0 # Distance needed to initiate attack
+        @export var attack_cooldown: float = 1.5
+        @export var attack_animation_name: String = "[ENEMY_ATTACK_ANIMATION]"
+        @export var attack_windup_time: float = 0.3 # Delay before damage/hitbox active
+        @export var attack_duration: float = 0.8 # Total animation time approx.
+
+        var can_perform_attack: bool = true
+        var is_attacking: bool = false
+
+        func _ready():
+            assert(stats_component != null, "EnemyCombatController: StatsComponent node not assigned.")
+            assert(ai_controller != null, "EnemyCombatController: AIController node not assigned.")
+            # Hitbox setup (if applicable)
+            if hitbox_area:
+                hitbox_area.monitoring = false
+                hitbox_area.monitorable = false
+                hitbox_area.body_entered.connect(_on_hitbox_body_entered)
+
+        # Called by AIController when in ATTACK state
+        func perform_attack(target: Node2D):
+            if not can_perform_attack or is_attacking:
+                 return
+
+            print("Enemy performing attack.")
+            is_attacking = true
+            can_perform_attack = false # Start cooldown conceptually
+
+            # Play animation
+            if animated_sprite:
+                animated_sprite.play(attack_animation_name)
+
+            # Use timers to sequence attack parts (windup -> active -> finish)
+            # --- Windup Timer ---
+            get_tree().create_timer(attack_windup_time).timeout.connect(_on_attack_windup_finished.bind(target))
+
+            # --- Cooldown Timer ---
+            get_tree().create_timer(attack_cooldown).timeout.connect(_on_cooldown_finished)
+
+            # --- Attack Duration / Finish ---
+            # Use AnimationPlayer signal if possible, otherwise timer
+            get_tree().create_timer(attack_duration).timeout.connect(_on_attack_animation_finished)
+
+
+        # Called after windup timer
+        func _on_attack_windup_finished(target: Node2D):
+            if not is_attacking: return # Attack might have been cancelled
+
+            print("Enemy attack active phase.")
+            # Enable hitbox or perform ranged attack logic
+            if hitbox_area:
+                # Position hitbox relative to enemy/target? For simplicity, assume child position is correct
+                hitbox_area.monitoring = true
+                hitbox_area.monitorable = true
+                # Disable hitbox shortly after
+                get_tree().create_timer(attack_duration - attack_windup_time - 0.1).timeout.connect(_disable_hitbox) # Tune duration
+            else:
+                # [RANGED_ATTACK_LOGIC]: Instantiate projectile scene, aim at target
+                print("Enemy performing ranged attack (logic placeholder).")
+                if is_instance_valid(target) and target.has_method("take_damage"):
+                    var damage = calculate_damage()
+                    target.take_damage(damage)
+
+
+        func _disable_hitbox():
+             if hitbox_area:
+                 # print("Disabling enemy hitbox")
+                 hitbox_area.monitoring = false
+                 hitbox_area.monitorable = false
+
+        func _on_attack_animation_finished():
+            if is_attacking: # Check if we were actually attacking
+                 # print("Enemy attack animation finished.")
+                 is_attacking = false
+                 _disable_hitbox() # Ensure hitbox is off
+
+
+        func _on_cooldown_finished():
+            # print("Enemy attack cooldown finished.")
+            can_perform_attack = true
+
+
+        func _on_hitbox_body_entered(body: Node2D):
+            if body.is_in_group("player"): # Check if it's the player
+                print("Enemy Hit Player: ", body.name)
+                if body.has_method("take_damage"):
+                    var damage = calculate_damage()
+                    body.take_damage(damage)
+                    _disable_hitbox() # Option: disable hitbox after first hit? Or let it persist?
+                else:
+                    print("Warning: Hit player body has no take_damage method.")
+
+        func calculate_damage() -> float:
+             # [CALCULATE_DAMAGE_WITH_STATS] - Use stats_component
+             return attack_damage # Placeholder
+
+        # Method for AIController to check if ready
+        func can_attack() -> bool:
+            return can_perform_attack and not is_attacking
+
+        # Method for AIController to get range
+        func get_attack_range() -> float:
+             return attack_range
+
+        # Called if AI state changes mid-attack
+        func cancel_attack():
+            if is_attacking:
+                 print("Enemy attack cancelled.")
+                 is_attacking = false
+                 _disable_hitbox()
+                 # Stop related timers? Use SceneTreeTimer.disconnect() if needed, or check is_attacking flag in callbacks.
+
+        # Called externally (e.g., by player attack) via parent node's method
+        func take_damage(amount: float):
+             if not is_instance_valid(stats_component): return
+
+             stats_component.modify_health(-amount)
+             print("Enemy took damage: ", amount, " Current Health: ", stats_component.get_current_health())
+
+             if stats_component.get_current_health() > 0:
+                 # Trigger hurt state in AI
+                 ai_controller.enter_hurt_state()
+                 # [PLAY_ENEMY_HURT_SOUND]
+             # Death is handled by stats_component signal -> loot dropper / AI death
+
+        ```
+    *   **`EnemyStatsComponent.gd`:**
+        ```gdscript
+        ## EnemyStatsComponent: Manages enemy stats and handles death signaling.
+        extends Node
+
+        # Signals
+        signal health_changed(current_health, max_health)
+        signal died(enemy_node) # Emits the enemy root node on death
+
+        @export var stats_resource_path: String = "[PATH_TO_ENEMY_STATS_RESOURCE]" # e.g. "res://data/enemies/goblin_stats.tres"
+        var stats: EnemyStats = null # Use specific EnemyStats resource type
+
+        var current_health: float = 50.0
+
+        func _ready():
+            load_stats()
+
+        func load_stats():
+            if stats_resource_path.is_empty() or not ResourceLoader.exists(stats_resource_path):
+                printerr("Error: EnemyStatsComponent - Invalid stats resource path: ", stats_resource_path)
+                stats = EnemyStats.new() # Create default fallback
+                stats.max_health = [ENEMY_DEFAULT_MAX_HEALTH]
+                stats.current_health = stats.max_health
+                print("Warning: Created default fallback stats for enemy.")
+            else:
+                stats = load(stats_resource_path) as EnemyStats # Ensure it loads as EnemyStats
+                if not stats:
+                     printerr("Error: Failed to load EnemyStats from path: ", stats_resource_path)
+                     return
+
+            if stats:
+                # Initialize runtime values
+                current_health = stats.max_health # Enemies usually start at full health
+                stats.current_health = current_health
+                print("Enemy Stats Loaded: Max Health=", stats.max_health)
+                emit_signal("health_changed", current_health, stats.max_health)
+
+
+        func modify_health(amount: float):
+            if not stats or current_health <= 0: return # Don't modify health if dead or no stats
+
+            var previous_health = current_health
+            current_health = clamp(current_health + amount, 0.0, stats.max_health)
+            stats.current_health = current_health # Keep resource synced
+
+            if current_health != previous_health:
+                emit_signal("health_changed", current_health, stats.max_health)
+
+            if current_health <= 0 and previous_health > 0:
+                 handle_death()
+
+
+        func handle_death():
+            print("Enemy Died!")
+            emit_signal("died", get_parent()) # Emit the signal with the enemy root node
+            # Death effects/animation might be triggered by listeners to 'died'
+
+
+        # --- Getters ---
+        func get_max_health() -> float:
+            return stats.max_health if stats else 0.0
+
+        func get_current_health() -> float:
+            return current_health
+
+        # Add getters for other stats if needed by AI/Combat controllers
+        func get_move_speed() -> float:
+            return stats.move_speed if stats else 0.0
+        ```
+    *   **`EnemyLootDropper.gd`:**
+        ```gdscript
+        ## EnemyLootDropper: Spawns loot based on a LootTable when the enemy dies.
+        extends Node
+
+        @export var loot_table_path: String = "[PATH_TO_LOOT_TABLE_RESOURCE]" # e.g., "res://data/loot_tables/goblin_loot.tres"
+        @export var item_pickup_scene: PackedScene = preload("res://path/to/ItemPickup.tscn") # [PATH_TO_ITEM_PICKUP_SCENE]
+
+        var loot_table: LootTable = null
+
+        func _ready():
+            # Connect to the death signal from the StatsComponent
+            var stats_comp = get_parent().find_child("EnemyStatsComponent", false, false) # Non-recursive search
+            if stats_comp:
+                stats_comp.died.connect(_on_enemy_died)
+            else:
+                printerr("Error: EnemyLootDropper could not find EnemyStatsComponent.")
+
+            # Load the loot table resource
+            if not loot_table_path.is_empty() and ResourceLoader.exists(loot_table_path):
+                loot_table = load(loot_table_path) as LootTable
+                if not loot_table:
+                    printerr("Error: Failed to load LootTable from path: ", loot_table_path)
+            else:
+                print("Warning: EnemyLootDropper - No valid loot table path provided.")
+
+            assert(item_pickup_scene != null, "EnemyLootDropper: ItemPickup scene not preloaded/assigned.")
+
+        func _on_enemy_died(enemy_node: Node2D):
+            print("Loot dropper triggered for: ", enemy_node.name)
+            if not loot_table:
+                print("No loot table assigned, skipping drop.")
+                return
+
+            # [ENEMY_DEATH_EFFECTS] - Play sounds, particle effects at enemy_node.global_position
+            # Example:
+            # var death_effect = load("[PATH_TO_DEATH_EFFECT_SCENE]").instantiate()
+            # get_tree().root.add_child(death_effect)
+            # death_effect.global_position = enemy_node.global_position
+
+            var items_to_drop: Array[ItemData] = loot_table.generate_loot()
+
+            if items_to_drop.is_empty():
+                print("Loot table generated no items.")
+                return
+
+            print("Dropping items: ", items_to_drop.size())
+            for item_data in items_to_drop:
+                spawn_item_pickup(item_data, enemy_node.global_position)
+
+            # The enemy node itself might queue_free or play a death animation
+            # handled by AIController or another component listening to 'died'.
+
+
+        func spawn_item_pickup(item_data: ItemData, position: Vector2):
+            if not item_pickup_scene: return
+
+            var item_instance = item_pickup_scene.instantiate() as Area2D
+            if item_instance.has_method("set_item_data"):
+                 item_instance.set_item_data(item_data)
+                 # Add to the main scene tree (not as child of enemy, as enemy might be freeing)
+                 get_tree().current_scene.add_child(item_instance)
+                 # Slightly randomize drop position around the enemy's death position
+                 var offset = Vector2(randf_range(-20, 20), randf_range(-20, 20))
+                 item_instance.global_position = position + offset
+            else:
+                 printerr("Error: ItemPickup scene doesn't have set_item_data method.")
+
+        ```
+
+*   **Resources:**
+
+    *   **`EnemyStats.gd`:** (Can inherit CharacterStats or be separate)
+        ```gdscript
+        ## EnemyStats: Resource holding stats specific to an enemy type.
+        class_name EnemyStats
+        extends CharacterStats # Inherit common stats from player stats
+
+        @export_group("AI Parameters")
+        @export var aggro_radius: float = 300.0 # Same as detection range usually
+        @export var leash_distance: float = 600.0
+        @export var experience_reward: int = 10
+        # Add other AI-specific tuning vars if needed (patrol speed, flee threshold etc.)
+
+        # Override inherited stats if needed with different defaults
+        func _init():
+            # Set default values specific to enemies if needed
+            max_health = 50.0
+            current_health = 50.0
+            move_speed = 75.0
+            attack_power = 8.0
+            defense = 2.0
+            # ... initialize other inherited vars if different defaults desired
+        ```
+        *Sample Resource File (`goblin_stats.tres`):*
+        ```tres
+        [gd_resource type="Resource" script_class="EnemyStats" load_steps=2 format=3]
+
+        [ext_resource type="Script" path="res://path/to/EnemyStats.gd" id="1_xyz"] ; Adjust path
+
+        [resource]
+        script = ExtResource("1_xyz")
+        # Inherited Core Stats
+        max_health = 60.0
+        current_health = 60.0
+        move_speed = 80.0
+        # Inherited Combat Stats
+        attack_power = 9.0
+        defense = 3.0
+        crit_chance = 0.02
+        crit_damage_multiplier = 1.5
+        # AI Parameters
+        aggro_radius = 350.0
+        leash_distance = 700.0
+        experience_reward = 12
+        ```
+
+    *   **`LootTable.gd`:**
+        ```gdscript
+        ## LootTable: Defines possible item drops with weights and quantities.
+        class_name LootTable
+        extends Resource
+
+        # Structure to hold drop info for one item type
+        class LootEntry extends Resource:
+            @export var item_data: ItemData = null
+            @export var weight: float = 1.0 # Higher weight = more common
+            @export var min_quantity: int = 1
+            @export var max_quantity: int = 1
+            @export var chance: float = 1.0 # Optional: Overall chance (0.0 to 1.0) for this entry to even be considered
+
+        @export var entries: Array[LootEntry] = []
+        @export var min_drops: int = 1 # Minimum number of *distinct* item types to drop
+        @export var max_drops: int = 3 # Maximum number of *distinct* item types to drop
+
+        # Generates a list of ItemData resources based on the table rules
+        func generate_loot() -> Array[ItemData]:
+            var dropped_items: Array[ItemData] = []
+            if entries.is_empty():
+                 return dropped_items
+
+            var potential_drops: Array[LootEntry] = []
+            var total_weight: float = 0.0
+
+            # First pass: Filter by chance and calculate total weight
+            for entry in entries:
+                 if entry and entry.item_data and randf() < entry.chance: # Check overall chance
+                     potential_drops.append(entry)
+                     total_weight += entry.weight
+
+            if potential_drops.is_empty() or total_weight <= 0:
+                 return dropped_items # No items passed chance check or no weight
+
+            # Determine how many distinct item types to drop
+            var num_drops = randi_range(min_drops, max_drops)
+            num_drops = min(num_drops, potential_drops.size()) # Cannot drop more types than available
+
+            # Second pass: Select items based on weight (Weighted Random Selection)
+            for _i in range(num_drops):
+                 if potential_drops.is_empty() or total_weight <= 0: break # Stop if we run out
+
+                 var random_weight = randf() * total_weight
+                 var current_weight_sum: float = 0.0
+                 var chosen_entry: LootEntry = null
+                 var chosen_entry_index: int = -1
+
+                 for j in range(potential_drops.size()):
+                     var entry = potential_drops[j]
+                     current_weight_sum += entry.weight
+                     if random_weight <= current_weight_sum:
+                         chosen_entry = entry
+                         chosen_entry_index = j
+                         break
+
+                 if chosen_entry and chosen_entry_index != -1:
+                     # Determine quantity
+                     var quantity = randi_range(chosen_entry.min_quantity, chosen_entry.max_quantity)
+                     # Add the item 'quantity' times
+                     for _q in range(quantity):
+                          dropped_items.append(chosen_entry.item_data)
+
+                     # Remove chosen entry from potential pool to avoid duplicates *types* in one roll
+                     total_weight -= chosen_entry.weight # Adjust total weight
+                     potential_drops.remove_at(chosen_entry_index)
+                 else:
+                     # Should not happen if total_weight > 0, but good to handle
+                     printerr("LootTable: Weighted selection failed unexpectedly.")
+                     break # Exit loop if something went wrong
+
+            return dropped_items
+
+        # Helper for data validation (optional)
+        func _validate_property(property):
+            if property.name == "entries":
+                 var current_entries = property.obj.get(property.name) as Array
+                 for i in range(current_entries.size()):
+                      var entry = current_entries[i] as LootEntry
+                      if not entry:
+                           return "LootEntry at index %d is null." % i
+                      if not entry.item_data:
+                           return "LootEntry at index %d has no ItemData assigned." % i
+                      if entry.weight <= 0:
+                           return "LootEntry '%s' has non-positive weight." % entry.item_data.item_name
+                      if entry.min_quantity < 1 or entry.max_quantity < entry.min_quantity:
+                           return "LootEntry '%s' has invalid quantity settings." % entry.item_data.item_name
+                      if entry.chance < 0.0 or entry.chance > 1.0:
+                            return "LootEntry '%s' has invalid chance (must be 0-1)." % entry.item_data.item_name
+            return null # No error
+        ```
+        *Sample Resource File (`goblin_loot.tres`):*
+        ```tres
+        [gd_resource type="Resource" script_class="LootTable" load_steps=5 format=3]
+
+        [ext_resource type="Script" path="res://path/to/LootTable.gd" id="1_aaa"]
+        [ext_resource type="Script" path="res://path/to/LootTable.gd" id="2_bbb"] # Path to LootEntry sub-resource script
+        [ext_resource type="Resource" path="res://data/items/materials/goblin_ear.tres" id="3_ccc"]
+        [ext_resource type="Resource" path="res://data/items/consumables/small_health_potion.tres" id="4_ddd"]
+
+        [resource]
+        script = ExtResource("1_aaa")
+        min_drops = 1
+        max_drops = 2
+        entries = Array[Resource("2_bbb")]([
+            &"entry1", &"entry2" # Use string IDs to define sub-resources
+        ])
+
+        [sub_resource type="Resource" id="entry1"]
+        script = ExtResource("2_bbb")
+        item_data = ExtResource("3_ccc") # Goblin Ear
+        weight = 10.0 # Common
+        min_quantity = 1
+        max_quantity = 2
+        chance = 0.8 # 80% chance to be considered
+
+        [sub_resource type="Resource" id="entry2"]
+        script = ExtResource("2_bbb")
+        item_data = ExtResource("4_ddd") # Small Health Potion
+        weight = 3.0 # Less common
+        min_quantity = 1
+        max_quantity = 1
+        chance = 0.5 # 50% chance to be considered
+        ```
+
+*   **Godot Editor Workflow Instructions:**
+    1.  Create `EnemyCharacter.tscn` scene with `CharacterBody2D` root. Add to `enemies` group.
+    2.  Add `CollisionShape2D` (set layer `ENEMY`, mask `WORLD`, `PLAYER`, `PLAYER_HITBOX`).
+    3.  Add `AnimatedSprite2D` (or `Sprite2D` + `AnimationPlayer`), load spritesheet `[PATH_TO_ENEMY_SPRITESHEET]`, define animations `[ENEMY_IDLE_ANIMATION]`, `[ENEMY_WALK_ANIMATION]`, `[ENEMY_ATTACK_ANIMATION]`, `[ENEMY_HURT_ANIMATION]`.
+    4.  Add `Node` named `EnemyStatsComponent`, attach `EnemyStatsComponent.gd`. Create `EnemyStats` resource (e.g., `goblin_stats.tres`), configure, assign path to `Stats Resource Path`.
+    5.  Add `Node` named `EnemyCombatController`, attach `EnemyCombatController.gd`.
+        *   (Optional Melee) Add `Area2D` child `HitboxArea` + `CollisionShape2D`. Set layer `ENEMY_HITBOX`, mask `PLAYER`. Disable `Monitoring/Monitorable`. Drag to `Hitbox Area` export.
+        *   Drag `EnemyStatsComponent` to `Stats Component`. Drag `AnimatedSprite2D` to `Animated Sprite`. Configure damage, range, cooldown, animation names.
+    6.  Add `Node` named `EnemyAIController`, attach `EnemyAIController.gd`.
+        *   Add child `Area2D` named `DetectionArea` + `CollisionShape2D` (Circle recommended). Set layer/mask to detect `PLAYER`. Adjust shape radius in editor (or script sets it from `detection_range`). Drag to `Detection Area` export.
+        *   Add child `NavigationAgent2D`. Configure Agent Height/Radius etc. in Inspector. Drag to `Navigation Agent` export.
+        *   Drag `EnemyCharacter` root to `Character Body`, `EnemyStatsComponent` to `Stats Component`, `EnemyCombatController` to `Combat Controller`, `AnimatedSprite2D` to `Animated Sprite`. Configure speed, ranges, leash.
+    7.  Add `Node` named `EnemyLootDropper`, attach `EnemyLootDropper.gd`. Create `LootTable` resource (e.g., `goblin_loot.tres`), configure drops, assign path to `Loot Table Path`. Preload/assign `ItemPickup.tscn` path to `Item Pickup Scene`.
+    8.  Connect Signals (in code ideally for components):
+        *   `EnemyStatsComponent.died` -> `EnemyAIController._on_death`
+        *   `EnemyStatsComponent.died` -> `EnemyLootDropper._on_enemy_died`
+        *   `DetectionArea.body_entered` -> `EnemyAIController._on_detection_area_body_entered`
+        *   `DetectionArea.body_exited` -> `EnemyAIController._on_detection_area_body_exited`
+        *   `NavigationAgent2D.velocity_computed` -> `EnemyAIController._on_navigation_velocity_computed`
+        *   `HitboxArea.body_entered` -> `EnemyCombatController._on_hitbox_body_entered` (if melee)
+    9.  **Navigation Setup:** Ensure you have a `NavigationRegion2D` covering the playable area in your main level scene, with a baked `NavigationPolygon`. Set the `NavigationAgent2D`'s `Navigation Map` property (usually inherited from parent NavigationRegion2D).
+
+*   **Testing and Debugging Procedures:**
+    1.  **Detection & Chase:** Place enemy in a test scene with navigation baked. Place player nearby. Verify enemy enters `CHASE` state when player enters `DetectionArea`. Verify enemy uses `NavigationAgent2D` to move towards player. Verify enemy stops at `chase_stop_distance`.
+    2.  **Attack:** Let enemy reach player. Verify it enters `ATTACK` state, plays attack animation, and triggers `take_damage` on player after windup. Verify cooldown prevents constant attacking. Check attack range logic.
+    3.  **Patrol & Idle:** Move player out of range. Verify enemy eventually returns to `PATROL` or `IDLE`. Verify patrol movement targets are generated and followed.
+    4.  **Leashing:** Lure enemy far from its `start_position`. Verify it enters `RETURN` state when `leash_distance` is exceeded and navigates back.
+    5.  **Hurt State:** Attack the enemy. Verify it enters `HURT` state (animation, brief pause/stun).
+    6.  **Death & Loot:** Reduce enemy health to zero. Verify `died` signal is emitted, AI stops, `[ENEMY_DEATH_EFFECTS]` play (placeholder), loot is generated according to `LootTable`, and `ItemPickup` scenes are spawned correctly.
+    7.  **Use Debug Tools:** Enable the `DebugOverlayEnemy` and the AI Log Panel/Visualizer. Monitor state changes, target acquisition, navigation path, and health in real-time. Check logs for state transitions and actions.
+
+*   **Generated Custom Tools & Utilities:**
+
+    *   **`DebugOverlayEnemy.gd` (Attach to CanvasLayer child of Enemy)**
+        ```gdscript
+        ## DebugOverlayEnemy: Displays real-time enemy AI state and health. (@tool)
+        @tool
+        extends CanvasLayer
+        # Similar structure to DebugOverlayPlayer, but fetches info from EnemyAIController
+
+        @export var enemy_node: NodePath # Path to EnemyCharacter root
+        @export var update_interval: float = 0.2
+
+        var enemy: CharacterBody2D = null
+        var ai_controller: Node = null
+        var stats_component: Node = null
+
+        var state_label: Label = null
+        var health_label: Label = null
+        var target_label: Label = null
+
+        var time_since_last_update: float = 0.0
+
+        func _ready():
+            # Create Labels
+            state_label = Label.new(); state_label.position = Vector2(10, 10)
+            health_label = Label.new(); health_label.position = Vector2(10, 30)
+            target_label = Label.new(); target_label.position = Vector2(10, 50)
+            add_child(state_label); add_child(health_label); add_child(target_label)
+
+            if get_tree() and not Engine.is_editor_hint():
+                _find_enemy_node()
+
+        func _process(delta):
+            if Engine.is_editor_hint():
+                 if state_label: state_label.text = "State: [Editor Mode]"
+                 return
+
+            if not is_instance_valid(enemy):
+                _find_enemy_node()
+                if not is_instance_valid(enemy):
+                    state_label.text = "Enemy node not found."
+                    return
+
+            time_since_last_update += delta
+            if time_since_last_update >= update_interval:
+                update_debug_info()
+                time_since_last_update = 0.0
+
+        func _find_enemy_node():
+             # Simplified: Assume this is child of the enemy root
+             enemy = get_parent() as CharacterBody2D
+             if is_instance_valid(enemy):
+                 ai_controller = enemy.find_child("EnemyAIController", false, false)
+                 stats_component = enemy.find_child("EnemyStatsComponent", false, false)
+             else:
+                 print("DebugOverlayEnemy: Could not find Parent Enemy node.")
+
+
+        func update_debug_info():
+            if not is_instance_valid(enemy): return
+
+            # AI State & Target
+            var state_text = "State: Unknown"
+            var target_text = "Target: Unknown"
+            if ai_controller and ai_controller.has_method("get_ai_state_info"):
+                var info = ai_controller.get_ai_state_info()
+                state_text = "State: %s" % info.get("state", "N/A")
+                target_text = "Target: %s" % info.get("target", "None")
+            state_label.text = state_text
+            target_label.text = target_text
+
+            # Health
+            var health_text = "HP: Unknown"
+            if stats_component and stats_component.has_method("get_current_health"):
+                 health_text = "HP: %.1f / %.1f" % [stats_component.get_current_health(), stats_component.get_max_health()]
+            health_label.text = health_text
+        ```
+        *   **Usage:** Add CanvasLayer child to `EnemyCharacter.tscn`, attach script. Toggle visibility via debug input/manager.
+
+    *   **AI Log/State Tracker Tool (Conceptual Editor Plugin):**
+        *   **Purpose:** Provides a dockable panel in the Godot Editor that displays AI state information for selected enemies running in the game.
+        *   **Implementation:** An `EditorPlugin` script.
+            *   Adds a dockable `Control` node (the panel).
+            *   In the panel's `_process` (when game is running), use `get_tree().get_nodes_in_group("enemies")` to find active enemies.
+            *   Allow selecting an enemy (e.g., via clicking in game view or a list in the panel).
+            *   For the selected enemy, call a method like `get_ai_state_info()` on its `EnemyAIController`.
+            *   Display the returned dictionary info (State, Target, Destination, etc.) in Labels within the panel.
+            *   Could also log state transitions to a `TextEdit` node in the panel.
+            *   Optionally add buttons to draw debug navigation paths (`NavigationServer2D.region_set_debug_enabled`).
+        *   **Integration:** Create plugin structure (`addons/ai_debugger/plugin.gd`, `addons/ai_debugger/ai_debugger_panel.tscn/.gd`). Enable plugin in Project Settings.
+
+*   **Scalability & Future Expansion:**
+    *   **Scalability:** Creating enemy variations is easy by creating new `EnemyStats` and `LootTable` resources and potentially tweaking exported parameters on the controllers. The component design helps manage complexity. Performance bottlenecks might occur with large numbers of enemies due to physics (`move_and_slide`) and AI processing. Consider optimizations like disabling AI for off-screen enemies or reducing navigation update frequency. Object pooling for enemies can be beneficial.
+    *   **Advanced Features:**
+        *   **Networking:** Similar challenges to Player. Server needs to run AI, validate hits, synchronize state (position, health, AI state) to clients. Client AIs might be purely visual or run simplified logic.
+        *   **Behavior Trees/GOAP:** Replace the basic `State` enum and `update_state`/`execute_state_logic` with a BT or GOAP library/implementation. `EnemyAIController` would become a runner for the chosen AI technique. This allows much more complex and reusable behaviors.
+        *   **Squad AI:** Requires a manager system. Individual AIControllers could communicate via the Event Bus or a dedicated Squad Manager to coordinate actions (focus fire, flanking).
+        *   **Advanced Pathfinding:** Use `NavigationServer2D` features for path recalculation on map changes, path costs, avoidance, etc.
+        *   **Archetypes:** Create base "Archetype" scenes (e.g., `MeleeEnemy.tscn`, `RangedEnemy.tscn`) inheriting from `EnemyCharacter.tscn` but pre-configured with specific components or default parameters.
+    *   **Refactorability:** `EnemyAIController` can become large. Separating navigation logic, target selection, and state execution into helper functions or even distinct nodes can improve readability. The state machine could be implemented more formally using State pattern classes.
+
+*   **Summary:** Provides a functional enemy with basic AI (patrol, chase, attack, return), stats, combat, and loot drops. Integrated tools aid debugging. Ready for extension with more sophisticated AI behaviors and archetypes.
+
+(... Sections for Map Generation, Loot & Items, UI, Global Systems, Tools Summary, Placeholders would follow in this detailed manner ...)

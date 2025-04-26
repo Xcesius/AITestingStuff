@@ -1,0 +1,12 @@
+[gd_scene format=3]
+
+[node name="ItemPickup" type="Area2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("[PATH_TO_ITEM_ICON_TEXTURE]")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = ExtResource("[PATH_TO_ITEM_PICKUP_COLLISION_SHAPE]")
+
+[ext_resource path="[PATH_TO_ITEM_ICON_TEXTURE]" type="Texture2D" id=1]
+[ext_resource path="[PATH_TO_ITEM_PICKUP_COLLISION_SHAPE]" type="Shape2D" id=2] 

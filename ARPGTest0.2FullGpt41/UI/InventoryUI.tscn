@@ -1,0 +1,5 @@
+[gd_scene format=3]
+
+[node name="InventoryUI" type="Control"]
+
+[node name="[INVENTORY_GRID_NODE_NAME]" type="GridContainer" parent="."] 

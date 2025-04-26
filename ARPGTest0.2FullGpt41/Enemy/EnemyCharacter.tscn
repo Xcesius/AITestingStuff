@@ -1,0 +1,25 @@
+[gd_scene format=3]
+
+[node name="EnemyCharacter" type="CharacterBody2D"]
+script = ExtResource("res://Enemy/EnemyMovement.gd")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = ExtResource("[PATH_TO_ENEMY_WALK_SPRITESHEET]")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = ExtResource("[PATH_TO_ENEMY_COLLISION_SHAPE]")
+
+[node name="AttackHitbox" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackHitbox"]
+shape = ExtResource("[PATH_TO_ENEMY_ATTACK_HITBOX_SHAPE]")
+
+[node name="AttackCooldown" type="Timer" parent="."]
+wait_time = [ENEMY_ATTACK_COOLDOWN]
+one_shot = true
+autostart = false
+
+[ext_resource path="res://Enemy/EnemyMovement.gd" type="Script" id=1]
+[ext_resource path="[PATH_TO_ENEMY_WALK_SPRITESHEET]" type="SpriteFrames" id=2]
+[ext_resource path="[PATH_TO_ENEMY_COLLISION_SHAPE]" type="Shape2D" id=3]
+[ext_resource path="[PATH_TO_ENEMY_ATTACK_HITBOX_SHAPE]" type="Shape2D" id=4] 

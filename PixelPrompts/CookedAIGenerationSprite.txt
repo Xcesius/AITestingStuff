@@ -1,0 +1,49 @@
+Create image [PROMPT]
+
+[CHARACTER=Humanoid_Armor_Base]
+[STYLE=pixel-art-2D-ARPG, 64x64-target-sprite-size, isometric-perspective, diablo-2-inspired, **DB16-color-palette**, distinct-dark-outlines, top-left-lighting, moderate-dithering-for-shading, clean-background, no-stray-pixels] // Specified DB16 palette, clarified target sprite size
+
+// Define the themes for the equipment sets with more keywords and rationale
+[EQUIPMENT_THEME_1=Holy Vindicator Gear, golden accents, white cloth, cross symbols, radiant light]
+[EQUIPMENT_THEME_2=Shadow Crusader Gear, dark iron, black leather, skull motifs, jagged edges, NO crosses, NO holy symbols (emphasizing dark/ambiguous alignment, avoiding religious icons)] // Added rationale
+[EQUIPMENT_THEME_3=Ancient Protector Gear, mossy stone, woven vines, leaf patterns, nature magic, earthy tones, NO crosses, NO skulls (emphasizing nature/elemental theme, avoiding religious/undead icons)] // Added rationale
+
+Create THREE cohesive sprite sheets. Each sheet will feature the SAME base model in Row 1, but DIFFERENT thematic equipment sets in Row 2.
+
+// --- Canvas and Grid Specifications ---
+[CANVAS_SIZE=1024x512 px] // Specific power-of-two canvas
+[ROW1_CELL_SIZE=128x128 px] // Ample space for 64x64 sprite + effects/room
+[ROW2_CELL_SIZE=64x64 px] // Standard icon size
+[PADDING=4 px] // Padding around each cell's content
+
+// --- Sheet Structure (Apply to ALL THREE sheets) ---
+
+[SHEET_N] // Where N is 1, 2, or 3
+
+  ─ROW 1 – 8‑View Universal Base Model (Cells: 8 across, 1 down)─
+  • Render a single, consistent, relatively unadorned base humanoid model suitable for wearing armor (e.g., simple padded tunic/pants) within each [ROW1_CELL_SIZE] cell. Target visual size approx [64x64-target-sprite-size].
+  • This EXACT base model rendering must be **repeated** identically in Row 1 of ALL THREE sheets.
+  • Pose: Use a standard ARPG relaxed standing idle pose viewed from 8 directions, ordered left-to-right: **S, SE, E, NE, N, NW, W, SW** (standard isometric compass directions). Pose should be suitable as a base for minor idle animations (breathing, subtle weight shift). Avoid rigid T/A-poses.
+  • Match the defined [STYLE] precisely. Apply [PADDING] within each cell.
+
+  ─ ROW 2 – Adaptive Thematic Equipment Grid (Theme: [EQUIPMENT_THEME_N]) (Cells: 9 across, 1 down)─
+  • **CRITICAL:** Generate items STRICTLY adhering to the specified [EQUIPMENT_THEME_N] for THIS sheet ONLY, placed within individual [ROW2_CELL_SIZE] cells.
+  • Auto‑invent 9 distinct gear/prop items specifically suited to the theme.
+  • Items MUST be distinct within this sheet AND distinct from items on the other two sheets.
+  • Required Slots: Helmet, Chestpiece (Cuirass), Gauntlets, Greaves, Boots, Main-Hand Weapon, Off-Hand Item (Shield/Focus/Tome), Belt, Cloak/Cape.
+  • Render each item at a clear, representative icon angle.
+  • Design items intended to visually fit the universal Row 1 base model without obvious clipping.
+  • Match the defined [STYLE] precisely. Apply [PADDING] within each cell.
+  • **Sheet 2 Specific Instruction:** Ensure NO holy symbols appear on any Shadow Crusader item.
+  • **Sheet 3 Specific Instruction:** Ensure NO holy symbols OR shadow/skull motifs appear on any Ancient Protector item.
+
+// --- Global Constraints (Apply to ALL sheets) ---
+• Output THREE separate image files, one for each sheet.
+• Ensure all three sheets are visually unified by the core [STYLE]. Row 1 must be identical across sheets; Row 2 must show clear, distinct thematic variation based ONLY on the specified [EQUIPMENT_THEME_N] for that sheet.
+• Adhere strictly to the [CANVAS_SIZE], cell sizes, and [PADDING].
+• Output **only** the three finished sprite sheet images—no explanatory text.
+
+STRICT COMPLIANCE REQUIRED: Do not deviate from defined constraints, especially regarding negative keywords, style fidelity, cell sizes, and palette adherence.
+
+
+[/PROMPT]

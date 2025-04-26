@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>General's Cry Optimizer</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        .container {
+            background-color: white;
+            padding: 20px 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #770000;
+        }
+        .input-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #770000;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 20px 0;
+        }
+        button:hover {
+            background-color: #900000;
+        }
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f8f8;
+            border-radius: 6px;
+        }
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .result-box {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .result-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #770000;
+            margin: 5px 0;
+        }
+        .visualization {
+            margin: 30px 0;
+        }
+        canvas {
+            width: 100%;
+            height: 400px;
+            background-color: white;
+            border: 1px solid #eee;
+            border-radius: 4px;
+        }
+        .recommendations {
+            background-color: #fff8e1;
+            padding: 15px 20px;
+            border-left: 4px solid #ffc107;
+            margin-top: 20px;
+        }
+        .formula {
+            background-color: #f0f7ff;
+            padding: 10px 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            margin: 15px 0;
+            display: inline-block;
+        }
+        .note {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>General's Cry Optimal Cooldown Calculator</h1>
+        <p>Calculate the optimal cooldown for your General's Cry setup based on the sawtooth DPS curve.</p>
+        
+        <div class="input-section">
+            <div>
+                <h2>Character Stats</h2>
+                
+                <div class="form-group">
+                    <label for="attackTime">Tectonic Slam Attack Time (seconds):</label>
+                    <input type="number" id="attackTime" step="0.01" min="0.1" max="3" value="1.67">
+                    <p class="note">This is seconds per attack (not attacks per second)</p>
+                </div>
+                
+                <div class="form-group">
+                    <label for="currentCooldown">Current General's Cry Cooldown (seconds):</label>
+                    <input type="number" id="currentCooldown" step="0.01" min="0.1" max="5" value="1.584">
+                </div>
+                
+                <div class="form-group">
+                    <label for="warriors">Number of Warriors:</label>
+                    <select id="warriors">
+                        <option value="5">5 (0% quality General's Cry)</option>
+                        <option value="6">6 (20% quality General's Cry)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div>
+                <h2>Attack Speed Changes</h2>
+                
+                <div class="form-group">
+                    <label for="bloodRageQuality">Blood Rage Quality:</label>
+                    <select id="bloodRageQuality">
+                        <option value="0">0% (+0% attack speed)</option>
+                        <option value="4">20% (+4% attack speed)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="extraFrenzy">Extra Frenzy Charges:</label>
+                    <input type="number" id="extraFrenzy" min="0" max="5" value="0">
+                    <p class="note">Each grants +4% attack speed</p>
+                </div>
+                
+                <div class="form-group">
+                    <label for="otherAS">Other Attack Speed Increases (%):</label>
+                    <input type="number" id="otherAS" min="0" max="100" value="0">
+                    <p class="note">E.g., gloves, jewels, supports, etc.</p>
+                </div>
+            </div>
+        </div>
+        
+        <button id="calculate">Calculate Optimal Cooldown</button>
+        
+        <div class="formula">
+            Optimal CD = (0.2 × Warriors) + 0.1 + (1/Attack Time) - (0.4 × (1/Attack Time))
+        </div>
+        
+        <div class="results">
+            <h2>Results</h2>
+            
+            <div class="result-grid">
+                <div class="result-box">
+                    <div>Current Attack Time</div>
+                    <div class="result-value" id="currentAttackTime">1.67s</div>
+                </div>
+                <div class="result-box">
+                    <div>New Attack Time</div>
+                    <div class="result-value" id="newAttackTime">-</div>
+                </div>
+                <div class="result-box">
+                    <div>Current Cooldown</div>
+                    <div class="result-value" id="displayCurrentCooldown">1.584s</div>
+                </div>
+                <div class="result-box">
+                    <div>Optimal Cooldown</div>
+                    <div class="result-value" id="optimalCooldown">-</div>
+                </div>
+            </div>
+            
+            <div class="visualization">
+                <h3>DPS Curve Visualization</h3>
+                <canvas id="dpsChart"></canvas>
+            </div>
+            
+            <div class="recommendations" id="recommendations">
+                <h3>Recommendations</h3>
+                <p>Click "Calculate Optimal Cooldown" to see personalized recommendations.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize display values
+            updateDisplayValues();
+            
+            // Add event listeners
+            document.getElementById('calculate').addEventListener('click', function() {
+                updateDisplayValues();
+                calculateOptimalCooldown();
+                drawDpsChart();
+                generateRecommendations();
+            });
+            
+            // Update display values on input change
+            document.querySelectorAll('input, select').forEach(el => {
+                el.addEventListener('change', updateDisplayValues);
+            });
+            
+            function updateDisplayValues() {
+                const attackTime = parseFloat(document.getElementById('attackTime').value);
+                const currentCooldown = parseFloat(document.getElementById('currentCooldown').value);
+                
+                document.getElementById('currentAttackTime').textContent = attackTime.toFixed(3) + 's';
+                document.getElementById('displayCurrentCooldown').textContent = currentCooldown.toFixed(3) + 's';
+                
+                // Calculate new attack time with speed increases
+                const bloodRageQuality = parseFloat(document.getElementById('bloodRageQuality').value) || 0;
+                const extraFrenzy = (parseInt(document.getElementById('extraFrenzy').value) || 0) * 4; // 4% per frenzy
+                const otherAS = parseFloat(document.getElementById('otherAS').value) || 0;
+                
+                const totalIncreasedAS = bloodRageQuality + extraFrenzy + otherAS;
+                const newAttackTime = attackTime / (1 + (totalIncreasedAS / 100));
+                
+                document.getElementById('newAttackTime').textContent = newAttackTime.toFixed(3) + 's';
+            }
+            
+            function calculateOptimalCooldown() {
+                // Get updated values
+                const bloodRageQuality = parseFloat(document.getElementById('bloodRageQuality').value) || 0;
+                const extraFrenzy = (parseInt(document.getElementById('extraFrenzy').value) || 0) * 4;
+                const otherAS = parseFloat(document.getElementById('otherAS').value) || 0;
+                const warriors = parseInt(document.getElementById('warriors').value);
+                
+                const attackTime = parseFloat(document.getElementById('attackTime').value);
+                const totalIncreasedAS = bloodRageQuality + extraFrenzy + otherAS;
+                const newAttackTime = attackTime / (1 + (totalIncreasedAS / 100));
+                
+                // Calculate attack frequency (attacks per second)
+                const attackFrequency = 1 / newAttackTime;
+                
+                // Apply the corrected formula: (0.2*warriors) + 0.1 + (1/attackTime) - (0.4*(1/attackTime))
+                const optimalCooldown = (0.2 * warriors) + 0.1 + attackFrequency - (0.4 * attackFrequency);
+                
+                // Display the result with more precision
+                document.getElementById('optimalCooldown').textContent = optimalCooldown.toFixed(9) + 's';
+                
+                return optimalCooldown;
+            }
+            
+            function drawDpsChart() {
+                const canvas = document.getElementById('dpsChart');
+                const ctx = canvas.getContext('2d');
+                
+                // Set canvas size properly
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+                
+                // Clear previous drawing
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Get values
+                const warriors = parseInt(document.getElementById('warriors').value);
+                const attackTime = parseFloat(document.getElementById('attackTime').value);
+                const currentCooldown = parseFloat(document.getElementById('currentCooldown').value);
+                
+                // Calculate new attack time with speed increases
+                const bloodRageQuality = parseFloat(document.getElementById('bloodRageQuality').value) || 0;
+                const extraFrenzy = (parseInt(document.getElementById('extraFrenzy').value) || 0) * 4;
+                const otherAS = parseFloat(document.getElementById('otherAS').value) || 0;
+                
+                const totalIncreasedAS = bloodRageQuality + extraFrenzy + otherAS;
+                const newAttackTime = attackTime / (1 + (totalIncreasedAS / 100));
+                
+                // Calculate optimal cooldown using the formula
+                const attackFrequency = 1 / newAttackTime;
+                const optimalCooldown = (0.2 * warriors) + 0.1 + attackFrequency - (0.4 * attackFrequency);
+                
+                // Set up chart dimensions
+                const margin = {top: 30, right: 30, bottom: 50, left: 60};
+                const width = canvas.width - margin.left - margin.right;
+                const height = canvas.height - margin.top - margin.bottom;
+                
+                // Draw axes
+                ctx.beginPath();
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 2;
+                
+                // X axis (cooldown)
+                ctx.moveTo(margin.left, height + margin.top);
+                ctx.lineTo(width + margin.left, height + margin.top);
+                
+                // Y axis (DPS)
+                ctx.moveTo(margin.left, margin.top);
+                ctx.lineTo(margin.left, height + margin.top);
+                ctx.stroke();
+                
+                // Add axis labels
+                ctx.fillStyle = '#000';
+                ctx.font = '14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Cooldown (seconds)', width/2 + margin.left, height + margin.top + 35);
+                
+                ctx.save();
+                ctx.translate(15, height/2 + margin.top);
+                ctx.rotate(-Math.PI/2);
+                ctx.textAlign = 'center';
+                ctx.fillText('DPS', 0, 0);
+                ctx.restore();
+                
+                // Calculate points for the sawtooth curve
+                const maxCooldown = Math.max(currentCooldown * 1.5, optimalCooldown * 1.5, 3);
+                const scale = width / maxCooldown; // scale for x-axis
+                
+                // Draw the sawtooth curve
+                ctx.beginPath();
+                ctx.strokeStyle = '#AA0000';
+                ctx.lineWidth = 3;
+                
+                // Start at origin
+                ctx.moveTo(margin.left, height + margin.top);
+                
+                // We'll calculate a proper sawtooth based on the mechanics
+                const pointsPerSecond = 20;
+                const points = [];
+                
+                for (let cd = 0.1; cd <= maxCooldown; cd += 1/pointsPerSecond) {
+                    // Calculate how many full attacks can fit in this cooldown
+                    const attacksPerCd = cd / newAttackTime;
+                    
+                    // Calculate effective DPS based on sawtooth pattern
+                    // DPS peaks at optimal points and drops between them
+                    let dps = 0;
+                    
+                    // Formula based on described "sawtooth" pattern
+                    // Each warrior gets one attack
+                    // Warriors attack in sequence with small delays
+                    const delayPerWarrior = 0.2;
+                    const constBuffer = 0.1;
+                    
+                    // Full warriors that can attack
+                    const fullAttackTime = newAttackTime * 0.6; // Only 60% of attack time needed (from formula)
+                    const maxPossibleWarriors = Math.min(warriors, Math.floor((cd - constBuffer) / delayPerWarrior));
+                    let effectiveWarriors = 0;
+                    
+                    if (maxPossibleWarriors > 0) {
+                        const timeForFullWarriors = (maxPossibleWarriors - 1) * delayPerWarrior;
+                        const remainingTime = cd - constBuffer - timeForFullWarriors;
+                        
+                        // Full warriors plus potential partial warrior
+                        if (remainingTime >= fullAttackTime) {
+                            effectiveWarriors = maxPossibleWarriors;
+                        } else {
+                            effectiveWarriors = maxPossibleWarriors - 1 + (remainingTime / fullAttackTime);
+                        }
+                    }
+                    
+                    // DPS is warriors divided by cooldown
+                    dps = effectiveWarriors / cd;
+                    
+                    // Normalize DPS to canvas height
+                    const x = margin.left + (cd * scale);
+                    const y = height + margin.top - (dps * height / (warriors / optimalCooldown));
+                    
+                    points.push({x, y});
+                    
+                    // Draw line segment
+                    if (points.length > 1) {
+                        ctx.lineTo(x, y);
+                    } else {
+                        ctx.moveTo(x, y);
+                    }
+                }
+                
+                ctx.stroke();
+                
+                // Mark current cooldown
+                const currentX = margin.left + (currentCooldown * scale);
+                ctx.beginPath();
+                ctx.strokeStyle = '#0066CC';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.moveTo(currentX, margin.top);
+                ctx.lineTo(currentX, height + margin.top);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                // Find the y-coordinate for the current cooldown
+                let currentY = height + margin.top;
+                for (let i = 1; i < points.length; i++) {
+                    if (points[i].x >= currentX) {
+                        // Linear interpolation
+                        const ratio = (currentX - points[i-1].x) / (points[i].x - points[i-1].x);
+                        currentY = points[i-1].y + (ratio * (points[i].y - points[i-1].y));
+                        break;
+                    }
+                }
+                
+                // Mark current point
+                ctx.beginPath();
+                ctx.fillStyle = '#0066CC';
+                ctx.arc(currentX, currentY, 6, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Mark optimal cooldown
+                const optimalX = margin.left + (optimalCooldown * scale);
+                ctx.beginPath();
+                ctx.strokeStyle = '#FF00FF';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.moveTo(optimalX, margin.top);
+                ctx.lineTo(optimalX, height + margin.top);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                // Find the y-coordinate for the optimal cooldown
+                let optimalY = height + margin.top;
+                for (let i = 1; i < points.length; i++) {
+                    if (points[i].x >= optimalX) {
+                        // Linear interpolation
+                        const ratio = (optimalX - points[i-1].x) / (points[i].x - points[i-1].x);
+                        optimalY = points[i-1].y + (ratio * (points[i].y - points[i-1].y));
+                        break;
+                    }
+                }
+                
+                // Mark optimal point (pink dot)
+                ctx.beginPath();
+                ctx.fillStyle = '#FF00FF';
+                ctx.arc(optimalX, optimalY, 8, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Add labels for the marks
+                ctx.fillStyle = '#0066CC';
+                ctx.textAlign = 'center';
+                ctx.fillText('Current: ' + currentCooldown.toFixed(3) + 's', currentX, margin.top - 10);
+                
+                ctx.fillStyle = '#FF00FF';
+                ctx.fillText('Optimal: ' + optimalCooldown.toFixed(6) + 's', optimalX, margin.top - 10);
+                
+                // Add cooldown ticks on x-axis
+                ctx.fillStyle = '#000';
+                ctx.textAlign = 'center';
+                const tickStep = maxCooldown > 5 ? 1 : 0.5;
+                for (let tick = 0; tick <= maxCooldown; tick += tickStep) {
+                    const tickX = margin.left + (tick * scale);
+                    ctx.beginPath();
+                    ctx.moveTo(tickX, height + margin.top);
+                    ctx.lineTo(tickX, height + margin.top + 5);
+                    ctx.stroke();
+                    ctx.fillText(tick.toFixed(1), tickX, height + margin.top + 20);
+                }
+            }
+            
+            function generateRecommendations() {
+                // Get current values
+                const currentCooldown = parseFloat(document.getElementById('currentCooldown').value);
+                const optimalCooldown = calculateOptimalCooldown();
+                const warriors = parseInt(document.getElementById('warriors').value);
+                const quality = warriors === 6 ? 20 : 0;
+                
+                let recommendations = '';
+                
+                // Compare current and optimal cooldown
+                const cdDiff = Math.abs(currentCooldown - optimalCooldown);
+                const cdPercent = (cdDiff / optimalCooldown) * 100;
+                
+                if (cdPercent < 5) {
+                    // Close to optimal
+                    recommendations += `
+                        <p><strong>Great setup!</strong> Your current cooldown (${currentCooldown.toFixed(3)}s) is within 5% of optimal (${optimalCooldown.toFixed(6)}s).</p>
+                        <p>You're at or very near the peak of your DPS curve.</p>
+                    `;
+                } else if (currentCooldown < optimalCooldown) {
+                    // Cooldown too short
+                    recommendations += `
+                        <p>Your cooldown (${currentCooldown.toFixed(3)}s) is <strong>${cdPercent.toFixed(1)}% shorter</strong> than optimal (${optimalCooldown.toFixed(6)}s).</p>
+                        <p>This means you're likely interrupting your warriors before they complete all possible attacks.</p>
+                        <p><strong>Recommendations:</strong></p>
+                        <ul>
+                            <li>Increase your cooldown by ${cdDiff.toFixed(6)}s to reach optimal timing</li>
+                            <li>Consider removing some CDR (cooldown reduction) from your build</li>
+                            <li>If you can't adjust cooldown, increase attack speed to compensate</li>
+                        </ul>
+                    `;
+                } else {
+                    // Cooldown too long
+                    recommendations += `
+                        <p>Your cooldown (${currentCooldown.toFixed(3)}s) is <strong>${cdPercent.toFixed(1)}% longer</strong> than optimal (${optimalCooldown.toFixed(6)}s).</p>
+                        <p>This means there's wasted time between all warriors attacking and your next General's Cry.</p>
+                        <p><strong>Recommendations:</strong></p>
+                        <ul>
+                            <li>Decrease your cooldown by ${cdDiff.toFixed(6)}s to reach optimal timing</li>
+                            <li>Look for sources of CDR (cooldown reduction) for warcries</li>
+                            <li>Consider Autoexertion quality or level changes</li>
+                            <li>Deep Breaths passive or Admonisher might help</li>
+                        </ul>
+                    `;
+                }
+                
+                // Quality recommendation
+                if (quality === 0) {
+                    const newAttackTimeValue = parseFloat(document.getElementById('newAttackTime').textContent.replace('s', ''));
+                    const attackFrequency = 1 / newAttackTimeValue;
+                    const sixWarriorCooldown = (0.2 * 6) + 0.1 + attackFrequency - (0.4 * attackFrequency);
+                    
+                    recommendations += `
+                        <p><strong>Quality upgrade:</strong> Consider upgrading General's Cry to 20% quality to get a 6th warrior.</p>
+                        <p>This would increase your maximum potential DPS by approximately 20%, but would require retuning your cooldown to around ${sixWarriorCooldown.toFixed(3)}s.</p>
+                    `;
+                }
+                
+                document.getElementById('recommendations').innerHTML = `<h3>Recommendations</h3>${recommendations}`;
+            }
+        });
+    </script>
+</body>
+</html>
