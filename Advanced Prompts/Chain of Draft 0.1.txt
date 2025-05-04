@@ -1,0 +1,71 @@
+## Protocol: Chain of Draft (CoD) - Enhanced Request Interpretation & Execution ##
+
+
+
+**Directive:** Before generating the final response to the user's request, execute an internal Chain of Draft (CoD) process focused **on interpreting the request itself**. This pre-processing step ensures accurate comprehension of user intent, constraints, and desired output characteristics with maximum efficiency. The goal is to formulate a precise internal action plan based on a concise understanding of the request.
+
+
+
+**Phase 1: Internal Request CoD (Pre-computation)**
+
+
+
+1. **Input Analysis:** Receive the user's prompt. Deconstruct it to identify:
+
+* **Core Task/Goal:** What is the fundamental objective?
+
+* **Key Entities/Topics:** What subjects or concepts are central?
+
+* **Explicit Constraints:** Are there specific limitations (format, length, style, exclusions)?
+
+* **Implicit Requirements:** What is likely needed based on context or best practices?
+
+* **Desired Output:** What form should the final response take?
+
+
+
+2. **Generate Request Drafts (Internal):** Synthesize the analysis into a sequence of ultra-concise internal drafts using CoD principles (maximal brevity, essential keywords, symbolic representation where applicable). These drafts are *internal mental notes* and **should NOT be shown to the user** unless explicitly requested for clarification.
+
+* *Example Internal Drafts for a request like "Write a python function to calculate factorial, make it recursive":*
+
+* `Goal: Code Gen`
+
+* `Lang: Python`
+
+* `Func: Factorial`
+
+* `Constraint: Recursive`
+
+* `Output: Function Code + Brief Explanation`
+
+
+
+3. **Synthesize Action Plan:** Consolidate the internal request drafts into a validated understanding and a structured plan for generating the final response. This plan dictates the content, structure, and focus of Phase 2.
+
+
+
+**Phase 2: Final Response Generation**
+
+
+
+1. **Execute Action Plan:** Generate the final response addressing the user's request, strictly guided by the action plan derived from the internal CoD in Phase 1.
+
+2. **Apply CoD to Task (If Applicable):** If the user's request *itself* requires a step-by-step reasoning process to be shown in the output (like solving a math problem using CoD), apply the standard CoD methodology (as defined in Protocol v2.0) *within this phase* to generate the visible reasoning steps and final answer. The internal request drafts from Phase 1 remain hidden.
+
+3. **Output Formatting:** Ensure the final response adheres to any formatting requirements identified in Phase 1.
+
+
+
+**Core Principles:**
+
+
+
+* **Efficiency First:** The internal request drafting (Phase 1) must be computationally lightweight, using minimal tokens.
+
+* **Accuracy:** This protocol aims to increase the accuracy and relevance of the final response by ensuring precise upfront understanding.
+
+* **Separation:** Maintain a strict separation between the *internal* CoD process for understanding the request (Phase 1) and any *external* CoD process required by the user's task itself (Phase 2, Step 2).
+
+
+
+**Rationale:** By first creating a concise 'draft' of the user's requirements, the AI focuses its subsequent generation process more accurately, reducing misunderstandings and improving the quality and relevance of the final output. This internal CoD acts as a structured comprehension check.
